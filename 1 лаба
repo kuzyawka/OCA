@@ -1,0 +1,71 @@
+OCHERED
+
+
+#include <iostream>
+#include <cstdlib>
+using namespace std;
+int n = 10;
+class ochered {
+private:
+	int* mas;
+	int gol;
+	int khvost;
+public:
+	ochered()
+	{
+		gol = 0;
+		khvost = 0;
+		mas = new int[n];
+	}
+	ochered(int a)
+	{
+		gol = 0;
+		khvost = 0;
+		mas = new int[a];
+	}
+	~ochered() {
+		delete[] mas;
+	}
+	void plusel(int b)
+	{
+		if (gol == (khvost + 1) % n)
+			cout << "\nОчередь переполнена!\n" << endl;
+		else {
+			mas[gol] = b;
+			khvost = (khvost + 1) % n;
+		}
+	}
+	void izvlechelem() {
+		if (gol != khvost)
+		{
+			cout << mas[gol];
+			gol = (gol + 1) % n;
+		}
+		else
+			cout << "\nОчередь пуста!\n";
+	}
+};
+int main()
+{
+	setlocale(LC_ALL, "Russian");
+	int cou;
+	bool c;
+	cout << "Введите количество элементов = ";
+	cin >> n;
+	ochered first(n);
+	do {
+		cout << "\nЧтобы ввести элемент, введите 1. Чтобы вывести элемент, введите 0: ";
+		cin >> c;
+		if (c) {
+			cout << "Введите значение = ";
+			cin >> cou;
+			first.plusel(cou);
+		}
+		else {
+			cout << "Значение элемента равно = ";
+			first.izvlechelem();
+			cout << endl;
+		}
+	} while (true);
+	return 0;
+}
