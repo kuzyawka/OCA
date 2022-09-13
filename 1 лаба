@@ -23,15 +23,16 @@ public:
 		khvost = 0;
 		mas = new int[a];
 	}
-	~ochered() {
+	~ochered()
+	{
 		delete[] mas;
 	}
-	void plusel(int b)
+	void add_el(int b)
 	{
 		if (gol == (khvost + 1) % n)
 			cout << "\nОчередь переполнена!\n" << endl;
 		else {
-			mas[gol] = b;
+			mas[khvost] = b;
 			khvost = (khvost + 1) % n;
 		}
 	}
@@ -42,7 +43,7 @@ public:
 			gol = (gol + 1) % n;
 		}
 		else
-			cout << "\nОчередь пуста!\n";
+			cout << "\n\nОчередь пуста!\n";
 	}
 };
 int main()
@@ -59,7 +60,7 @@ int main()
 		if (c) {
 			cout << "Введите значение = ";
 			cin >> cou;
-			first.plusel(cou);
+			first.add_el(cou);
 		}
 		else {
 			cout << "Значение элемента равно = ";
