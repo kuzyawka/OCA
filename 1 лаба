@@ -70,3 +70,78 @@ int main()
 	} while (true);
 	return 0;
 }
+
+
+
+STEK
+
+
+
+#include <iostream>
+#include <cstdlib>
+using namespace std;
+int n = 10;
+class stek {
+private:
+	int* mas;
+	int gol;
+public:
+	stek()
+	{
+		gol = -1;
+		mas = new int[n];
+	}
+	stek(int a)
+	{
+		gol = -1;
+		mas = new int[a];
+	}
+	~stek() {
+		delete[] mas;
+	}
+	void dobav(int b)
+	{
+		if (gol == n - 1)
+			cout << "\nСтек переполнен!\n" << endl;
+		else
+		{
+			gol++;
+			mas[gol] = b;
+		}
+	}
+	void izvl()
+	{
+		if (gol >= 0)
+		{
+			cout << mas[gol];
+			gol--;
+		}
+		else cout << "\n\nСтек пуст!\n";
+	}
+};
+
+int main() {
+	setlocale(LC_ALL, "Russian");
+	int cou;
+	bool c;
+	cout << "Введите количество элементов в стеке: ";
+	cin >> n;
+	stek first(n);
+	do {
+		cout << "\nЧтобы добавить, введите 1. Чтобы извлечь, введите 0: ";
+		cin >> c;
+		if (c) {
+			cout << "Введите значение: ";
+			cin >> cou;
+			first.dobav(cou);
+		}
+		else
+		{
+			cout << "Значение равно: ";
+			first.izvl();
+			cout << endl;
+		}
+
+	} while (true);
+	return 0;
+}
