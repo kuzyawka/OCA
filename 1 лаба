@@ -4,13 +4,13 @@ OCHERED
 #include <iostream>
 #include <cstdlib>
 using namespace std;
-int n = 10;
-class ochered {
-private:
-	int* mas;
-	int gol;
-	int khvost;
-public:
+int n = 10; //размер массива
+class ochered { //класс очереди
+private://закрытые члены класса
+	int* mas;//указатель на массив
+	int gol;//начало
+	int khvost;//конец
+public://открытые члены класса
 	ochered()
 	{
 		gol = 0;
@@ -23,24 +23,24 @@ public:
 		khvost = 0;
 		mas = new int[a];
 	}
-	~ochered()
+	~ochered() //для освобождения памяти
 	{
 		delete[] mas;
 	}
-	void add_el(int b)
+	void add_el(int b)//добавить элемент
 	{
-		if (gol == (khvost + 1) % n)
+		if (gol == (khvost + 1) % n)//проверить, есть ли место в очереди
 			cout << "\nОчередь переполнена!\n" << endl;
 		else {
-			mas[khvost] = b;
-			khvost = (khvost + 1) % n;
+			mas[khvost] = b;//записать значение в массив
+			khvost = (khvost + 1) % n;//присвоить номер последнего элемента
 		}
 	}
-	void izvlechelem() {
-		if (gol != khvost)
+	void izvlechelem() {//извлечь элемент
+		if (gol != khvost)//проверить, есть ли элементы в очереди
 		{
-			cout << mas[gol];
-			gol = (gol + 1) % n;
+			cout << mas[gol];//вывести последний элемент в очереди
+			gol = (gol + 1) % n;//номер следующего элемента присваивается голове
 		}
 		else
 			cout << "\n\nОчередь пуста!\n";
@@ -50,7 +50,7 @@ int main()
 {
 	setlocale(LC_ALL, "Russian");
 	int cou;
-	bool c;
+	bool c;//для выполнения цикла
 	cout << "Введите количество элементов = ";
 	cin >> n;
 	ochered first(n);
