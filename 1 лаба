@@ -80,50 +80,50 @@ STEK
 #include <iostream>
 #include <cstdlib>
 using namespace std;
-int n = 10;
-class stek {
+int n = 10;//размер массива
+class stek { //класс для стека
 private:
-	int* mas;
-	int gol;
+	int* mas;//указатель на массив
+	int gol;//вершина стека
 public:
-	stek()
+	stek()//конструктор без параметров
 	{
 		gol = -1;
 		mas = new int[n];
 	}
-	stek(int a)
+	stek(int a)//конструктор с одним параметром
 	{
 		gol = -1;
 		mas = new int[a];
 	}
-	~stek() {
+	~stek() {//деструктор
 		delete[] mas;
 	}
-	void dobav(int b)
+	void dobav(int b)//добавить элемент
 	{
-		if (gol == n - 1)
+		if (gol == n - 1) //проверить, переполнен ли стек
 			cout << "\nСтек переполнен!\n" << endl;
 		else
 		{
-			gol++;
-			mas[gol] = b;
+			gol++;//увеличить значение вершины
+			mas[gol] = b;//внести значение  в массив
 		}
 	}
-	void izvl()
+	void izvl()//извлечь элемент
 	{
-		if (gol >= 0)
+		if (gol >= 0)//проверка
 		{
-			cout << mas[gol];
-			gol--;
+			cout << mas[gol];//извлечение
+			gol--;//уменьшить значение вершины на 1
 		}
-		else cout << "\n\nСтек пуст!\n";
+		else cout << "\n\nСтек пуст!\n";//если не выполняется
 	}
 };
 
 int main() {
 	setlocale(LC_ALL, "Russian");
 	int cou;
-	bool c;
+	bool c;//для проверки условий и цикла
 	cout << "Введите количество элементов в стеке: ";
 	cin >> n;
 	stek first(n);
