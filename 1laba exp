@@ -7,7 +7,7 @@ private:
 	int* quearray;//указатель на одномерный массив с элементами
 	int front;//первый элемент
 	int back;//последний элем
-	int nElem;//текущий элемент
+	int nElem;//кол-во текущих элементов
 public:
 	queue(int s) {//конструктор
 		maxSize = s;
@@ -31,8 +31,8 @@ public:
 		nElem--;
 		return temp;
 	}
-	int peekFront() {//просто прочитает элемент в начале очереди, чтобы не удалять и не извлекать
-		return quearray[front];
+	/*int peekFront() {//просто прочитает элемент в начале очереди, чтобы не удалять и не извлекать
+		return quearray[front];*/
 	}
 	bool isEmpty() {//пустая ли очередь
 		return(nElem == 0);//true, усли очередь пуста
@@ -40,9 +40,10 @@ public:
 	bool isFull() {//заполненная ли очередь
 		return(nElem == maxSize);//false, если не пустая
 	}
-	int size() {//количество элем в очереди
+	/*int size() {//количество элем в очереди
 		return nElem;//текущее кол-во
 	}
+
 	int display() {
 
 		if(nElem==0)
@@ -69,7 +70,7 @@ public:
 		}
 		else if (nElem == 1)
 			return quearray[front];
-	}
+	}*/
 };
 
 int main(int argc, char** argv) {
@@ -92,9 +93,9 @@ int main(int argc, char** argv) {
 		case 2:
 			theQueue.remove();
 			break;
-		case 3:
+		/*case 3:
 			theQueue.display();
-			break;
+			break;*/
 		}
 	}
 	system("pause");
