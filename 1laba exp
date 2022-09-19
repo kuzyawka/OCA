@@ -1,0 +1,102 @@
+#include <iostream>
+#include <cstdlib>
+using namespace std;
+class queue {
+private:
+	int maxSize;//хранение максимально возможного количества элем очереди
+	int* quearray;//указатель на одномерный массив с элементами
+	int front;//первый элемент
+	int back;//последний элем
+	int nElem;//текущий элемент
+public:
+	queue(int s) {//конструктор
+		maxSize = s;
+		quearray = new int[maxSize];//память для хранения этих элементов
+		front = 0;
+		back = -1;//-1 , так как в начале элементов еще нет
+		nElem = 0;//кол-во текущ элементов
+	}
+	void insert(int j) {//вставка элемента в конец очереди
+		if (back == maxSize - 1) {//если очередь заполнена, то можно начать ее перезаписывать
+			back = -1;//чтобы начать новую очередь
+			nElem = 0;
+		}
+		quearray[++back] = j;//чтобы элем встал на позицию ноль
+		nElem++;
+	}
+	int remove() {//извлечение элемента из начала очереди
+		int temp = quearray[front++];//присваиваем первый элемент и увеличиваем индекс
+		if (front == maxSize)//если убрали элемент, то присваиваем ему 0
+			front = 0;
+		nElem--;
+		return temp;
+	}
+	int peekFront() {//просто прочитает элемент в начале очереди, чтобы не удалять и не извлекать
+		return quearray[front];
+	}
+	bool isEmpty() {//пустая ли очередь
+		return(nElem == 0);//true, усли очередь пуста
+	}
+	bool isFull() {//заполненная ли очередь
+		return(nElem == maxSize);//false, если не пустая
+	}
+	int size() {//количество элем в очереди
+		return nElem;//текущее кол-во
+	}
+	int display() {
+
+		if(nElem==0)
+		return(nElem ==0);//true, если пустая
+
+		if(nElem !=0)
+			return(nElem == 0);
+
+		if (front > back) {//если голова больше последнего (правее)
+			int j = front;
+			while (j != maxSize) {
+				return quearray[j];
+				j++;
+			}
+			j = 0;
+			while (j < back) {
+				return quearray[j];
+				j++;
+			}
+		}
+		else if (nElem < back) {
+			for (int i = front; i <= back; i++)
+				return quearray[i];
+		}
+		else if (nElem == 1)
+			return quearray[front];
+	}
+};
+
+int main(int argc, char** argv) {
+	setlocale(LC_ALL, "Russian");
+	int choice = 1;
+	int number;
+	cout << "ВВедите количество элементов в очереди: ";
+	cin >> number;
+	queue theQueue(number);
+	cout << "\n1-Вставить элемент \n2-Удалить элемент из начала \n3-Вывести очередь на экран\n 4-Выход\n";
+	while (choice != 4) {
+		cin >> choice;
+		switch (choice)
+		{
+		case 1:
+			cout << "Элемент: ";
+			cin >> number;
+			theQueue.insert(number);
+			break;
+		case 2:
+			theQueue.remove();
+			break;
+		case 3:
+			theQueue.display();
+			break;
+		}
+	}
+	system("pause");
+	return 0;
+}
