@@ -1,0 +1,194 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <iostream>
+#include <string.h>
+#include <vector>
+#include <cmath>
+#include <type_traits>
+
+
+struct Variant8: Base {
+	int number;
+	char place[50];
+	char time[50];
+	char data[50];
+	int price;
+};
+
+struct Base {//базовая структура
+	bool Delete = false;
+};
+
+template<typename AStruct, typename = std::enable_if<std::is_base_of<Base, AStruct>::value>> //создать шаблон и потом можно использовать при любых типах переменных (Astruct), наследуется от Basa (плюс структура Delete) 
+class Base_a {
+private:
+	AStruct *_baseMas;
+	long _base_aSize;
+	char* _base_aName;
+
+	void exchange(AStruct* ap, AStruct* bp) {//метод поменять местами
+		AStruct per = *ap;
+		*ap = *bp;
+		*bp = per;
+	}
+
+public:
+	Base_a(std::string base_aName, long length) {
+		_base_aName = new char[base_aName.length() + 1];//выделяют новую память для объекта строки
+		strcpy(_base_aName, base_aName.c_str());//с помощью функции копируем base_aName в _base_aName
+
+		_baseMas = new AStruct[length]; //выделяют новую память для объекта
+		_base_aSize = length;
+
+		for (size_t i = 0; i < _base_aSize; i++)//size_t счетчик цикла, более точный, чем тип int
+			_baseMas[i].Delete = true;
+	}
+	~Base_a() {//деструктор для освобождения памяти
+		delete[] _base_Mas;
+	}
+
+
+	/*1. “Очистка” структурных переменных (отметка переменной как не
+содержащей данных). Функция должна получать в качестве параметра индекс
+массива.
+*/
+	void Delete_ind(int index) { //метод для удаления
+		_baseMas[index].Delete = true;
+	}
+
+
+	/*2. Поиск свободной структурной переменной. Функция должна возвращать
+индекс первого свободного элемента в массиве структур.*/
+	int FindEmptyper() {
+		for (size_t i = 0; i < _base_aSize; i++)
+			if (_baseMas[i].Delete)
+				return i; //если выполняется, то возвращается индекс этой переменной, если нет, то -1
+		return -1;
+	}
+
+
+/*3. Ввод элементов (полей) структуры с клавиатуры. В качестве параметра в
+функцию должен передаваться индекс элемента массива*/
+	void Add_el(int index, AStruct base) {
+		_baseMas[index] = base;
+		_baseMas[index].Delete = false;
+	}
+
+
+	/*4. Вывод элементов (полей) структуры на монитор. В функцию должен
+передаваться индекс элемента массива.*/
+	AStruct Get_el(int index) {
+		return _baseMas[index];
+	}
+
+	/*5. Вывод на экран всех заполненных элементов массива структур.*/
+	std::vector<AStruct> GetALL_el() {//создать динамический массив типа шаблона
+		std::vector<AStruct> result; //еще динамический массив типа шаблона
+		for (size_t i = 0; i < _base_aSize; i++)
+			if (!_baseMas[i].Delete)//если не удален
+				result.push_back(_baseMas);//функция добавления элементов в вектор
+		retutn result;
+	}
+
+	/*6. Поиск в массиве структур элемента с заданным значением поля или с
+наиболее близким к нему по значению. Предусмотреть возможность задания
+одного числового значения и одного строкового.
+*/
+	AStruct* FindNearEl(int (*selectorFunction)(AStruct), int searchEl) {//создаем анонимную функцию (лямбду) (объявляются в месте использоания и не получают уникального идентификатора для доступа к ним). int (*selectorFunction)(AStruct) принмает AStruct и возвращает int, а в нее передаем элемент массива, сравнивая с searchEl 
+		int index_nearEl = -1;
+		int min = INT_MAX;
+
+		for (size_t i=0; i< _base_aSize; i++)
+			if (!_baseMas[i].Delete) {
+				int valueMin = abs(selectorFunction(_baseMas[i]) - searchEl);
+
+				if (valueMin < min) {
+					min = valueMin;
+					index_nearEl = i;
+				}
+			}
+		return index_nearEl == -1 ? (AStruct*)NULL : &_baseMas[index_nearEl];
+
+}
+
+	AStruct* FindNearString(std::string(*selectorFunction)(AStruct),std:: string searchEl) {
+		for (size_t i = 0; i < _baseSize; i++)
+			if (!_baseMas[i].Delete && selectorFunction(_baseMas[i]).find(searchEl) != std::string::npos) //вводим константу, обозначающую несуществующий индекс в массиве
+				return &_baseMas[i];
+		return NULL;
+	}
+	AStruct* FindNearName(*selectorFunction)(AStruct),std:: string searchEl);
+	AStruct* FindNearAge(*selectorFunction)(AStruct), int searchEl);
+
+	/*7. Поиск в массиве структуры с минимальным значением заданного поля.
+Поле должно передаваться в поле числом, обозначающим номер поля в
+структуре.*/
+template<typename AValue>
+AStruct* FindMin(AValue(*selectorFunction)(Astruct)) {//вводим новый шаблонный тип 
+	AValue min = selectorFunction(_baseMas[0]);
+	int indexMinEl = -1;
+	for (size_t i=0; i < _base_aSize; i++)
+	if (!_baseMas[i].Delete && selectorFunction(_baseMas[i]<=min)
+	{
+		indexMinEl=1;
+			min= selectorFunction(_baseMas[i]);
+	}
+	return indexMinEl == -1 ? (AStuct*)NULL : &_baseMas[indexMinEl];
+
+}
+ 
+/*8. Сортировка массива структур в порядке возрастания заданного поля (при
+сортировке можно использовать тот факт, что в Си++ разрешается присваивание
+структурированных переменных);*/
+
+/*9. Сортировка массива структур в порядке убывания заданного поля (при
+сортировке можно использовать тот факт, что в Си++ разрешается присваивание
+структурированных переменных);
+*/
+void Sort(bool (*f)(AStruct, AStruct)) {//сортировка пузырьком
+	for (int i = 0; i < _base_aSize - 1; i++)
+		for (int j = 0; j < _base_aSize - i - 1; j++)
+			if (f(_baseMas[j], _baseMas[j + 1]))
+				swap(&_baseMas[j], &_baseMas[j + 1]);//функция для замены двух переменных
+
+}
+
+/*10. Функция чтения файла с содержимым базы данных (массива структурных
+элементов).*/
+void Read() {
+	FILE* file = fopen(_base_aName, "rb");//двоичный вид  записи
+
+	for (size_t i = 0; i < _base_aSize; i++)
+		fread(&_baseMas[i], sizeof(AStruct), 1, file);
+	fclose(file);
+}
+
+/*11. Функция записи в файл содержимого базы данных (массива структурных
+элементов).*/
+
+void Save() {
+	FILE* file = fopen(_base_aName, "wb");//для записи не текста
+
+	for (size_t i = 0; i < _base_aSize; i++)
+		fwrite(&_baseMas[i], sizeof(AStruct), 1, file);
+	fclose(file);
+}
+};
+
+
+int main() {
+	int Size = 10;
+	std::string Name = "MyBase.bin";
+	Base_a<Variant8>* base = new Base_a<Variant8>(Name, Size);
+
+	for (size_t i = 0; i < 3; i++)
+	{
+		Variant8 structure;
+		std::cout << "number"; std::cin >> structure.number;
+		std::cout << "place"; std::cin >> structure.place;
+		std::cout << "time"; std::cin >> structure.time;
+		std::cout << "data"; std::cin >> structure.data;
+		std::cout << "price"; std::cin >> structure.price;
+		base->Add_el(i, structure);
+	}
+}
