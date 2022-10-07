@@ -1,13 +1,21 @@
 #include <stdlib.h>
+#include <iomanip>
+#include <tuple>
 #include <stdio.h>
 #include <iostream>
 #include <string.h>
 #include <vector>
 #include <cmath>
 #include <type_traits>
+using namespace std;
 
 
-struct Variant8: Base {
+struct Base {//базовая структура
+	bool Delete = false;
+};
+//8. Номер рейса, пункт назначения, время вылета, дата вылета, стоимость билета.
+
+struct Variant8 : Base {
 	int number;
 	char place[50];
 	char time[50];
@@ -15,9 +23,6 @@ struct Variant8: Base {
 	int price;
 };
 
-struct Base {//базовая структура
-	bool Delete = false;
-};
 
 template<typename AStruct, typename = std::enable_if<std::is_base_of<Base, AStruct>::value>> //создать шаблон и потом можно использовать при любых типах переменных (Astruct), наследуется от Basa (плюс структура Delete) 
 class Base_a {
@@ -33,7 +38,7 @@ private:
 	}
 
 public:
-	Base_a(std::string base_aName, long length) {
+	Base_a(string base_aName, long length) {
 		_base_aName = new char[base_aName.length() + 1];//выделяют новую память для объекта строки
 		strcpy(_base_aName, base_aName.c_str());//с помощью функции копируем base_aName в _base_aName
 
@@ -71,7 +76,7 @@ public:
 функцию должен передаваться индекс элемента массива*/
 	void Add_el(int index, AStruct base) {
 		_baseMas[index] = base;
-		_baseMas[index].Delete = false;
+		_baseMas[index].Delete = false;//если добавляем элемент, то поле занято
 	}
 
 
@@ -82,8 +87,8 @@ public:
 	}
 
 	/*5. Вывод на экран всех заполненных элементов массива структур.*/
-	std::vector<AStruct> GetALL_el() {//создать динамический массив типа шаблона
-		std::vector<AStruct> result; //еще динамический массив типа шаблона
+	vector<AStruct> GetALL_el() {//создать динамический массив типа шаблона с помощью вектора
+		vector<AStruct> result; //еще динамический массив типа шаблона
 		for (size_t i = 0; i < _base_aSize; i++)
 			if (!_baseMas[i].Delete)//если не удален
 				result.push_back(_baseMas);//функция добавления элементов в вектор
@@ -108,17 +113,16 @@ public:
 				}
 			}
 		return index_nearEl == -1 ? (AStruct*)NULL : &_baseMas[index_nearEl];
-
+		//принимает структуру и элемент, который нужно найти, или близкий
 }
 
-	AStruct* FindNearString(std::string(*selectorFunction)(AStruct),std:: string searchEl) {
+	AStruct* FindNearString(string(*selectorFunction)(AStruct),string searchEl) {
 		for (size_t i = 0; i < _baseSize; i++)
-			if (!_baseMas[i].Delete && selectorFunction(_baseMas[i]).find(searchEl) != std::string::npos) //вводим константу, обозначающую несуществующий индекс в массиве
+			if (!_baseMas[i].Delete && selectorFunction(_baseMas[i]).find(searchEl) != string::npos) //вводим константу, обозначающую несуществующий индекс в массиве
 				return &_baseMas[i];
 		return NULL;
 	}
-	AStruct* FindNearName(*selectorFunction)(AStruct),std:: string searchEl);
-	AStruct* FindNearAge(*selectorFunction)(AStruct), int searchEl);
+	
 
 	/*7. Поиск в массиве структуры с минимальным значением заданного поля.
 Поле должно передаваться в поле числом, обозначающим номер поля в
@@ -177,18 +181,49 @@ void Save() {
 
 
 int main() {
-	int Size = 10;
-	std::string Name = "MyBase.bin";
-	Base_a<Variant8>* base = new Base_a<Variant8>(Name, Size);
+	setlocale(LC_CTYPE, "Russian");
+	int SizeofDB;
+	string NameofDB;
+	int change;
+	int cou;
 
-	for (size_t i = 0; i < 3; i++)
-	{
-		Variant8 structure;
-		std::cout << "number"; std::cin >> structure.number;
-		std::cout << "place"; std::cin >> structure.place;
-		std::cout << "time"; std::cin >> structure.time;
-		std::cout << "data"; std::cin >> structure.data;
-		std::cout << "price"; std::cin >> structure.price;
-		base->Add_el(i, structure);
+	cout << "Введите размер и имя бд: " <<"\nРазмер: ";
+	cin >> SizeofDB;
+	cout << "Имя: ";
+	cin >> NameofDB;
+
+	Base_a<Variant8>* database = new Base_a<Variant8>(SizeofDB, NameofDB);
+	do {
+		cout << "\nВыбор: \n1.Ввод элементов в бд \n2.Очистка элементов в бд \n3.Поиск свободной переменной  \n4.Вывод одного элемента  \n5.Вывод всей бд  \n6.Поиск с заданным значением поля  \n7.Сортировка  \n8.Сохранение бд в файл  \n 9.Чтение записей из файла   \n0.Выход из программы\n" << endl;
+		cin >> change;
+		switch (change) {
+		case 1:
+			cout << "Количество необходимых записей в бд: ";
+			do {
+				cin >> cou;
+			} while (cou > SizeofDB);
+			for (size_t j = 0; j < cou; j++) {
+				Variant8 structure;
+				cout << "\nНомер рейса: ";
+				cin >> structure.number;
+				cout << "\nПункт назначения: ";
+				cin >> structure.place;
+				cout << "\nВремя вылета (в строку): ";
+				cin >> structure.time;
+				cout << "\nДата вылета (в строку): ";
+				cin >> structure.data;
+				cout << "\nСтоимость билета: ";
+				cin >> structure.price;
+
+				database->Add_el(structure, j);
+				cout << "Добавлено " << j + 1 << "из " << cou << endl;
+
+			}
+			break;
+
+		case 2:
+
+
+		}
 	}
 }
