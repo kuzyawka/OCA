@@ -7,6 +7,7 @@
 #include <vector>
 #include <cmath>
 #include <type_traits>
+#pragma warning(disable : 4996) // ошибка компилятора при использовании функции копирования строки(использутеся при присваивании имени базы данных)
 using namespace std;
 
 
@@ -25,7 +26,7 @@ struct Variant8 : Base {
 
 
 template<typename AStruct, typename = std::enable_if<std::is_base_of<Base, AStruct>::value>> //создать шаблон и потом можно использовать при любых типах переменных (Astruct), наследуется от Basa (плюс структура Delete) 
-class Base_a {
+class Database {
 private:
 	Variant8 *_baseMas;
 	long _base_aSize;
@@ -38,7 +39,7 @@ private:
 	}
 
 public:
-	Base_a(int length, string base_aName) {
+    Database(int length, string base_aName) {
 		_base_aName = new char[base_aName.length() + 1];//выделяют новую память для объекта строки
 		_base_aSize = length;
 		strcpy(_base_aName, base_aName.c_str());//с помощью функции копируем base_aName в _base_aName
@@ -48,8 +49,8 @@ public:
 		for (size_t i = 0; i < _base_aSize; i++)//size_t счетчик цикла, более точный, чем тип int
 			_baseMas[i].Delete = true;
 	}
-	~Base_a() {//деструктор для освобождения памяти
-		delete[] _base_Mas;
+	~Database() {//деструктор для освобождения памяти
+		delete[] _baseMas;
 	}
 
 
@@ -131,12 +132,13 @@ template<typename AValue>
 AStruct* FindMin(AValue(*selectorFunction)(Astruct)) {//вводим новый шаблонный тип 
 	AValue min = selectorFunction(_baseMas[0]);
 	int indexMinEl = -1;
-	for (size_t i=0; i < _base_aSize; i++)
-	if (!_baseMas[i].Delete && selectorFunction(_baseMas[i]<=min)
-	{
-		indexMinEl=1;
-			min= selectorFunction(_baseMas[i]);
-	}
+    for (size_t i = 0; i < _base_aSize; i++) {
+        if (!_baseMas[i].Delete && selectorFunction(_baseMas[i]) <= min)
+        {
+            indexMinEl = 1;
+                min = selectorFunction(_baseMas[i]);
+        }
+    }
 	return indexMinEl == -1 ? (AStuct*)NULL : &_baseMas[indexMinEl];
 
 }
@@ -152,9 +154,10 @@ AStruct* FindMin(AValue(*selectorFunction)(Astruct)) {//вводим новый 
 void Sort(bool (*selection)(AStruct, AStruct)) {//сортировка пузырьком
 	for (int i = 0; i < _base_aSize - 1; i++)
 		for (int j = 0; j < _base_aSize - i - 1; j++)
-			if (selection(_baseMas[j], _baseMas[j + 1]))
-				swap(&_baseMas[j], &_baseMas[j + 1]);//функция для замены двух переменных
-
+            if (selection(_baseMas[j], _baseMas[j + 1])) {
+                AStruct AToSwap = _baseMas[j];
+                swap(&_baseMas[j], &_baseMas[j + 1]);//функция для замены двух переменных
+            }
 }
 
 /*10. Функция чтения файла с содержимым базы данных (массива структурных
@@ -191,13 +194,23 @@ int main() {
 	Variant8 first;
 	vector<Variant8> all;
     char find;
+    char find_swInt;
+    char find_swStr;
+    int numb, cost, typeSorting;
+    string places, times, datas;
+    Variant8* minNumber;
+    Variant8* minCost;
+    Variant8* placeStr;
+    Variant8* timeStr;
+    Variant8* dataStr;
+
 
 	cout << "Введите размер и имя бд: " <<"\nРазмер: ";
 	cin >> SizeofDB;
 	cout << "Имя: ";
 	cin >> NameofDB;
 
-	Base_a<Variant8>* database = new Base_a<Variant8>(SizeofDB, NameofDB);
+    Database<Variant8>* database = new Database<Variant8>(SizeofDB, NameofDB);
 	do {
 		cout << "\nВыбор: \n1.Ввод элементов в бд \n2.Очистка элементов в бд \n3.Поиск свободной переменной  \n4.Вывод одного элемента  \n5.Вывод всей бд  \n6.Поиск с заданным значением поля  \n7.Сортировка  \n8.Сохранение бд в файл  \n 9.Чтение записей из файла   \n0.Выход из программы\n" << endl;
 		cin >> change;
@@ -264,52 +277,65 @@ int main() {
             cin >> find;
             switch (find) {
             case 'i':
-                cout << "\n Искать: n-номер рейса , p-пункт назначения , a- ,  сеанс - S, цену - C или аудиторию - A" << endl;
-                cin >> findMinInt;
-                switch (findMinInt) {
-                case 'C':
-                    cout << "Цена для поиска: ";
-                    cin >> cost;
-                    cout << "Искомая цена: ";
-                    minByCost = database->findIntElement([](Film p) { return p.costFilm; }, cost);
-                    if (minByCost == NULL)
-                        cout << "NotFound!" << endl;
-                    else
-                        cout << minByCost->nameFilm << " " << minByCost->sessionFilm << " " << minByCost->costFilm << " " << minByCost->auditoriaofFilm << endl;
-                    break;
+                cout << "\nИскать: n-номер рейса , s-стоимость билета" << endl;
+                cin >> find_swInt;
+                    switch (find_swInt) {
                 case 'n':
-                    cout << "Сеанс для поиска: ";
-                    cin >> session;
-                    cout << "Искомый номер сеанса: ";
-                    minBySession = database->findIntElement([](Film p) { return p.sessionFilm; }, session);
-                    if (minBySession == NULL)
+                    cout << "\nНомер рейса для поиска: ";
+                    cin >> numb;
+                    cout << "\nНомер рейса: ";
+                    minNumber = database->FindNearEl([](Variant8 p) { return p.number; }, numb);
+                    if (minNumber == NULL)
                         cout << "NotFound!" << endl;
                     else
-                        cout << minBySession->nameFilm << " " << minBySession->sessionFilm << " " << minBySession->costFilm << " " << minBySession->auditoriaofFilm << endl;
+                        cout << minNumber->number << " " << minNumber->place << " " << minNumber->time << " " << minNumber->data<<" "<<minNumber->price << endl;
                     break;
-                case 'A':
-                    cout << "Аудитория для поиска: ";
-                    cin >> auditoria;
-                    cout << "Мскомая аудитория: ";
-                    minByAuditoria = database->findIntElement([](Film p) { return p.auditoriaofFilm; }, auditoria);
-                    if (minByAuditoria == NULL)
+                case 's':
+                    cout << "\nСтоимость билета для поиска: ";
+                    cin >> cost;
+                    cout << "\nСтоимость билета: ";
+                    minCost = database->FindNearEl([](Variant8 p) { return p.price; }, cost);
+                    if (minCost == NULL)
                         cout << "NotFound!" << endl;
                     else
-                        cout << minByAuditoria->nameFilm << " " << minByAuditoria->sessionFilm << " " << minByAuditoria->costFilm << " " << minByAuditoria->auditoriaofFilm << endl;
+                        cout << minCost->number << " " << minCost->place << " " << minCost->time << " " << minCost->data << " " << minCost->price << endl;
                     break;
+             
                 }break;
 
-            case 'n':
+            case 's':
+                cout << "\n Искать: p-пункт назначения , t-время вылета , d-дата вылета " << endl;
+                cin >> find_swStr;
+                switch (find_swStr) {
+                case 'p':
+                    cout << "\nПункт назначения для поиска: ";
+                    cin >> places;
+                    placeStr = database->FindNearString ([](Variant8 p) { return string(p.place); }, places);
+                    if (placeStr == NULL)
+                        cout << "NotFound!" << endl;
+                    else
+                        cout << placeStr->number << " " << placeStr->place << " " << placeStr->time << " " << placeStr->data << " " << placeStr->price << endl;
+                    break;
 
-                cout << "Имя для поиска: ";
-                cin >> name;
-                resByStr = database->findStringElement([](Film p) { return string(p.nameFilm); }, name);
-                if (resByStr == NULL)
-                    cout << "NotFound!" << endl;
-                else
-                    cout << resByStr->nameFilm << " " << resByStr->sessionFilm << " " << resByStr->costFilm << " " << resByStr->auditoriaofFilm << endl;
-
-
+                case 't':
+                    cout << "\nВремя вылета для поиска: ";
+                    cin >> times;
+                    timeStr = database->FindNearString([](Variant8 p) { return string(p.time); }, times);
+                    if (timeStr == NULL)
+                        cout << "NotFound!" << endl;
+                    else
+                        cout << timeStr->number << " " << timeStr->place << " " << timeStr->time << " " << timeStr->data << " " << timeStr->price << endl;
+                    break;
+                case 'd':
+                    cout << "\nДата вылета для поиска: ";
+                    cin >> datas;
+                    dataStr = database->FindNearString([](Variant8 p) { return string(p.data); }, datas);
+                    if (dataStr == NULL)
+                        cout << "NotFound!" << endl;
+                    else
+                        cout << dataStr->number << " " << dataStr->place << " " << dataStr->time << " " << dataStr->data << " " << dataStr->price << endl;
+                    break;
+                }
 
 
             }break;
@@ -317,43 +343,59 @@ int main() {
 
         case 7:
 
-            cout << "Выберите тип сортировки: минимальное по строке - 1, минимальное по числу - 2, по возрастанию - 3, по убыванию - 4." << endl;
+            cout << "\nВыберите тип сортировки: 1 - минимальное по строке , 2 - минимальное по числу, 3 - по возрастанию, 4 - по убыванию: " << endl;
             cin >> typeSorting;
             switch (typeSorting) {
             case 1:
-                minByName = database->FindMinimal<string>([](Film p) { return string(p.nameFilm); });
-                cout << "Min by Name: " << minByName->nameFilm << " " << minByName->sessionFilm << " " << minByName->costFilm << " " << minByName->auditoriaofFilm << endl;
-                break;
-            case 2:
-            {
-                int findMinInt;
-                cout << "Что будем искать? сеанс - 1, цену - 2 или аудиторию - 3" << endl;
-                cin >> findMinInt;
-                switch (findMinInt) {
-                case 2:
-                    cout << "Минимальная цена: ";
-                    minByCost = database->FindMinimal<int>([](Film p) { return p.costFilm; });
-                    if (minByCost == NULL)
-                        cout << "NotFound!" << endl;
-                    else
-                        cout << minByCost->nameFilm << " " << minByCost->sessionFilm << " " << minByCost->costFilm << " " << minByCost->auditoriaofFilm << endl;
-                    break;
+                cout << "\nИщем: 1-место, 2-время, 3-дату: " << endl;
+                int b;
+                cin >> b;
+
+                switch (b) {
                 case 1:
-                    cout << "Минимальный номер сеанса: ";
-                    minBySession = database->FindMinimal<int>([](Film p) { return p.sessionFilm; });
-                    if (minBySession == NULL)
-                        cout << "NotFound!" << endl;
-                    else
-                        cout << minBySession->nameFilm << " " << minBySession->sessionFilm << " " << minBySession->costFilm << " " << minBySession->auditoriaofFilm << endl;
+                    cout << "\nМесто: ";
+                    placeStr = database->FindMin<string>([](Variant8 p) { return (string)p.place; });
+                   
+                        cout << placeStr->number << " " << placeStr->place << " " << placeStr->time << " " << placeStr->data << " " << placeStr->price << endl;
+                    break;
+                case 2:
+                    cout << "\nВремя: ";
+                    timeStr = database->FindMin<string>([](Variant8 p) { return (string)p.time; });
+
+                    cout << timeStr->number << " " << timeStr->place << " " << timeStr->time << " " << timeStr->data << " " << timeStr->price << endl;
                     break;
                 case 3:
-                    cout << "Наименьшая аудитория: ";
-                    minByAuditoria = database->FindMinimal<int>([](Film p) { return p.auditoriaofFilm; });
-                    if (minByAuditoria == NULL)
+                    cout << "\nДата: ";
+                    dataStr = database->FindMin<string>([](Variant8 p) { return (string)p.data; });
+
+                    cout << dataStr->number << " " << dataStr->place << " " << dataStr->time << " " << dataStr->data << " " << dataStr->price << endl;
+                    break;
+                }
+
+
+            case 2:
+            {
+                int find_sw;
+                cout << "\nИщем: номер билета - 1, цену - 2: " << endl;
+                cin >> find_swInt;
+                switch (find_swInt) {
+                case 2:
+                    cout << "\nМинимальная цена: ";
+                    minCost = database->FindMin<int>([](Variant8 p) { return p.price; });
+                    if (minCost == NULL)
                         cout << "NotFound!" << endl;
                     else
-                        cout << minByAuditoria->nameFilm << " " << minByAuditoria->sessionFilm << " " << minByAuditoria->costFilm << " " << minByAuditoria->auditoriaofFilm << endl;
+                        cout  << minCost->number << " " << minCost->place << " " << minCost->time << " " << minCost->data << " " << minCost->price << endl;
                     break;
+                case 1:
+                    cout << "\nМинимальный номер билета: ";
+                    minNumber = database->FindMin<int>([](Variant8 p) { return p.number; });
+                    if (minNumber == NULL)
+                        cout << "NotFound!" << endl;
+                    else
+                        cout << minNumber->number << " " << minNumber->place << " " << minNumber->time << " " << minNumber->data << " " << minNumber->price << endl;
+                    break;
+               
                 }
 
             } break;
@@ -361,82 +403,94 @@ int main() {
             {
 
                 int insrt;
-                cout << "Критерий сортировки: название - 1, цена - 2, аудитория - 3, сеанс - 4" << endl;
+                cout << "Критерий сортировки: 1 - номер билета, 2 - место, 3 - время, 4- дата, 5 - цена: " << endl;
                 cin >> insrt;
                 switch (insrt) {
                 case 1:
-                    database->Sorting([](Film p1, Film p2) { return string(p1.nameFilm) > string(p2.nameFilm); });
-                    cout << "Сортировка по возрастанию имени: " << endl;
-                    allAfterSort = database->printAllElemtnts();
-                    for (size_t i = 0; i < allAfterSort.size(); i++)
-                        cout << allAfterSort[i].nameFilm << " " << allAfterSort[i].sessionFilm << " " << allAfterSort[i].costFilm << " " << allAfterSort[i].auditoriaofFilm << endl;
+                    database->Sort([](Variant8 p1, Variant8 p2) { return int(p1.number) > int(p2.number); });
+                    cout << "Сортировка по возрастанию номера билета: " << endl;
+                    all = database->GetALL_el();
+                    for (size_t i = 0; i < all.size(); i++)
+                        cout << all[i].number << " " << all[i].place << " " << all[i].time << " " << all[i].data<<" "<<all[i].price << endl;
                     break;
                 case 2:
-                    database->Sorting([](Film p1, Film p2) { return int(p1.costFilm) > int(p2.costFilm); });
-                    cout << "Сортировка по возрастанию цены: " << endl;
-                    allAfterSort = database->printAllElemtnts();
-                    for (size_t i = 0; i < allAfterSort.size(); i++)
-                        cout << allAfterSort[i].nameFilm << " " << allAfterSort[i].sessionFilm << " " << allAfterSort[i].costFilm << " " << allAfterSort[i].auditoriaofFilm << endl;
+                    database->Sort([](Variant8 p1, Variant8 p2) { return string(p1.place) > string(p2.place); });
+                    cout << "Сортировка по возрастанию места: " << endl;
+                    all = database->GetALL_el();
+                    for (size_t i = 0; i < all.size(); i++)
+                        cout << all[i].number << " " << all[i].place << " " << all[i].time << " " << all[i].data << " " << all[i].price << endl;
                     break;
 
                 case 3:
-                    database->Sorting([](Film p1, Film p2) { return int(p1.auditoriaofFilm) > int(p2.auditoriaofFilm); });
-                    cout << "Сортировка по возрастанию аудитории: " << endl;
-                    allAfterSort = database->printAllElemtnts();
-                    for (size_t i = 0; i < allAfterSort.size(); i++)
-                        cout << allAfterSort[i].nameFilm << " " << allAfterSort[i].sessionFilm << " " << allAfterSort[i].costFilm << " " << allAfterSort[i].auditoriaofFilm << endl;
+                    database->Sort([](Variant8 p1, Variant8 p2) { return string(p1.time) > string(p2.time); });
+                    cout << "Сортировка по возрастанию времени: " << endl;
+                    all = database->GetALL_el();
+                    for (size_t i = 0; i < all.size(); i++)
+                        cout << all[i].number << " " << all[i].place << " " << all[i].time << " " << all[i].data << " " << all[i].price << endl;
                     break;
 
                 case 4:
-                    database->Sorting([](Film p1, Film p2) { return int(p1.sessionFilm) > int(p2.sessionFilm); });
-                    cout << "Сортировка по возрастанию сеанса: " << endl;
-                    allAfterSort = database->printAllElemtnts();
-                    for (size_t i = 0; i < allAfterSort.size(); i++)
-                        cout << allAfterSort[i].nameFilm << " " << allAfterSort[i].sessionFilm << " " << allAfterSort[i].costFilm << " " << allAfterSort[i].auditoriaofFilm << endl;
+                    database->Sort([](Variant8 p1, Variant8 p2) { return string(p1.data) > string(p2.data); });
+                    cout << "Сортировка по возрастанию даты: " << endl;
+                    all = database->GetALL_el();
+                    for (size_t i = 0; i < all.size(); i++)
+                        cout << all[i].number << " " << all[i].place << " " << all[i].time << " " << all[i].data << " " << all[i].price << endl;
                     break;
-
+                case 5:
+                    database->Sort([](Variant8 p1, Variant8 p2) { return int(p1.price) > int(p2.price); });
+                    cout << "Сортировка по возрастанию цены: " << endl;
+                    all = database->GetALL_el();
+                    for (size_t i = 0; i < all.size(); i++)
+                        cout << all[i].number << " " << all[i].place << " " << all[i].time << " " << all[i].data << " " << all[i].price << endl;
+                    break;
 
 
                 }
             }break;
 
             case 4:
-            {
+            { 
+                int insrt;
+            cout << "Критерий сортировки: 1 - номер билета, 2 - место, 3 - время, 4- дата, 5 - цена: " << endl;
+            cin >> insrt;
+            switch (insrt) {
+            case 1:
+                database->Sort([](Variant8 p1, Variant8 p2) { return int(p1.number) < int(p2.number); });
+                cout << "Сортировка по возрастанию номера билета: " << endl;
+                all = database->GetALL_el();
+                for (size_t i = 0; i < all.size(); i++)
+                    cout << all[i].number << " " << all[i].place << " " << all[i].time << " " << all[i].data << " " << all[i].price << endl;
+                break;
+            case 2:
+                database->Sort([](Variant8 p1, Variant8 p2) { return string(p1.place) < string(p2.place); });
+                cout << "Сортировка по возрастанию места: " << endl;
+                all = database->GetALL_el();
+                for (size_t i = 0; i < all.size(); i++)
+                    cout << all[i].number << " " << all[i].place << " " << all[i].time << " " << all[i].data << " " << all[i].price << endl;
+                break;
 
-                cout << "Критерий сортировки: название - 1, цена - 2, аудитория - 3, сеанс - 4" << endl;
-                cin >> insrt;
-                switch (insrt) {
-                case 1:
-                    database->Sorting([](Film p1, Film p2) { return string(p1.nameFilm) < string(p2.nameFilm); });
-                    cout << "Сортировка по убыванию имени: " << endl;
-                    allAfterSort = database->printAllElemtnts();
-                    for (size_t i = 0; i < allAfterSort.size(); i++)
-                        cout << allAfterSort[i].nameFilm << " " << allAfterSort[i].sessionFilm << " " << allAfterSort[i].costFilm << " " << allAfterSort[i].auditoriaofFilm << endl;
-                    break;
-                case 2:
-                    database->Sorting([](Film p1, Film p2) { return int(p1.costFilm) < int(p2.costFilm); });
-                    cout << "Сортировка по убыванию цены: " << endl;
-                    allAfterSort = database->printAllElemtnts();
-                    for (size_t i = 0; i < allAfterSort.size(); i++)
-                        cout << allAfterSort[i].nameFilm << " " << allAfterSort[i].sessionFilm << " " << allAfterSort[i].costFilm << " " << allAfterSort[i].auditoriaofFilm << endl;
-                    break;
+            case 3:
+                database->Sort([](Variant8 p1, Variant8 p2) { return string(p1.time) < string(p2.time); });
+                cout << "Сортировка по возрастанию времени: " << endl;
+                all = database->GetALL_el();
+                for (size_t i = 0; i < all.size(); i++)
+                    cout << all[i].number << " " << all[i].place << " " << all[i].time << " " << all[i].data << " " << all[i].price << endl;
+                break;
 
-                case 3:
-                    database->Sorting([](Film p1, Film p2) { return int(p1.auditoriaofFilm) < int(p2.auditoriaofFilm); });
-                    cout << "Сортировка по убыванию аудитории: " << endl;
-                    allAfterSort = database->printAllElemtnts();
-                    for (size_t i = 0; i < allAfterSort.size(); i++)
-                        cout << allAfterSort[i].nameFilm << " " << allAfterSort[i].sessionFilm << " " << allAfterSort[i].costFilm << " " << allAfterSort[i].auditoriaofFilm << endl;
-                    break;
-
-                case 4:
-                    database->Sorting([](Film p1, Film p2) { return int(p1.sessionFilm) < int(p2.sessionFilm); });
-                    cout << "Сортировка по убыванию сеанса: " << endl;
-                    allAfterSort = database->printAllElemtnts();
-                    for (size_t i = 0; i < allAfterSort.size(); i++)
-                        cout << allAfterSort[i].nameFilm << " " << allAfterSort[i].sessionFilm << " " << allAfterSort[i].costFilm << " " << allAfterSort[i].auditoriaofFilm << endl;
-                    break;
-
+            case 4:
+                database->Sort([](Variant8 p1, Variant8 p2) { return string(p1.data) < string(p2.data); });
+                cout << "Сортировка по возрастанию даты: " << endl;
+                all = database->GetALL_el();
+                for (size_t i = 0; i < all.size(); i++)
+                    cout << all[i].number << " " << all[i].place << " " << all[i].time << " " << all[i].data << " " << all[i].price << endl;
+                break;
+            case 5:
+                database->Sort([](Variant8 p1, Variant8 p2) { return int(p1.price) < int(p2.price); });
+                cout << "Сортировка по возрастанию цены: " << endl;
+                all = database->GetALL_el();
+                for (size_t i = 0; i < all.size(); i++)
+                    cout << all[i].number << " " << all[i].place << " " << all[i].time << " " << all[i].data << " " << all[i].price << endl;
+                break;
                 }
             }
 
@@ -447,18 +501,18 @@ int main() {
             break;
 
         case 9:
-            database->Restore();
+            database->Read();
             cout << "Прочитано.\n";
             break;
 
 
 
-        case -1:
+        case 0:
             cout << "Работа закончена."; break;
 
 
         }
-    } while (instractionFromPerson != -1);
+    } while (change != 0);
 
     return 0;
 }
