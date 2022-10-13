@@ -3,6 +3,7 @@
 #include <tuple>
 #include <stdio.h>
 #include <iostream>
+#include <fstream>
 #include <string.h>
 #include <vector>
 #include <cmath>
@@ -18,9 +19,9 @@ struct Base {//базовая структура
 
 struct Variant8 : Base {
 	int number;
-	char place[50];
-	char time[50];
-	char data[50];
+	char place[10];
+	char time[10];
+	char data[10];
 	int price;
 };
 
@@ -83,17 +84,17 @@ public:
 
 	/*4. Вывод элементов (полей) структуры на монитор. В функцию должен
 передаваться индекс элемента массива.*/
-	AStruct Get_el(int index) {
+	AStruct Get_el(int index) {//создаем анонимную функцию (лямбду) (объявляются в месте использоания и не получают уникального идентификатора для доступа к ним)
 		return _baseMas[index];
 	}
 
 	/*5. Вывод на экран всех заполненных элементов массива структур.*/
 	vector<AStruct> GetALL_el() {//создать динамический массив типа шаблона с помощью вектора
-		vector<AStruct> result; //еще динамический массив типа шаблона
+		vector<AStruct> resultData; //еще динамический массив типа шаблона
 		for (size_t i = 0; i < _base_aSize; i++)
 			if (!_baseMas[i].Delete)//если не удален
-				result.push_back(_baseMas);//функция добавления элементов в вектор
-		retutn result;
+				resultData.push_back(_baseMas[i]);//функция добавления элементов в вектор
+		return resultData;
 	}
 
 	/*6. Поиск в массиве структур элемента с заданным значением поля или с
@@ -118,7 +119,7 @@ public:
 }
 
 	AStruct* FindNearString(string(*selectorFunction)(AStruct),string searchEl) {
-		for (size_t i = 0; i < _baseSize; i++)
+		for (size_t i = 0; i < _base_aSize; i++)
 			if (!_baseMas[i].Delete && selectorFunction(_baseMas[i]).find(searchEl) != string::npos) //вводим константу, обозначающую несуществующий индекс в массиве
 				return &_baseMas[i];
 		return NULL;
@@ -129,7 +130,7 @@ public:
 Поле должно передаваться в поле числом, обозначающим номер поля в
 структуре.*/
 template<typename AValue>
-AStruct* FindMin(AValue(*selectorFunction)(Astruct)) {//вводим новый шаблонный тип 
+AStruct* FindMin(AValue(*selectorFunction)(AStruct)) {//вводим новый шаблонный тип 
 	AValue min = selectorFunction(_baseMas[0]);
 	int indexMinEl = -1;
     for (size_t i = 0; i < _base_aSize; i++) {
@@ -139,7 +140,7 @@ AStruct* FindMin(AValue(*selectorFunction)(Astruct)) {//вводим новый 
                 min = selectorFunction(_baseMas[i]);
         }
     }
-	return indexMinEl == -1 ? (AStuct*)NULL : &_baseMas[indexMinEl];
+	return indexMinEl == -1 ? (AStruct*)NULL : &_baseMas[indexMinEl];
 
 }
  
@@ -156,35 +157,70 @@ void Sort(bool (*selection)(AStruct, AStruct)) {//сортировка пузы�
 		for (int j = 0; j < _base_aSize - i - 1; j++)
             if (selection(_baseMas[j], _baseMas[j + 1])) {
                 AStruct AToSwap = _baseMas[j];
-                swap(&_baseMas[j], &_baseMas[j + 1]);//функция для замены двух переменных
+               // swap(&_baseMas[j], &_baseMas[j + 1]);//функция для замены двух переменных
+                _baseMas[j] = _baseMas[j + 1];
+                    _baseMas[j + 1] = AToSwap;
+
             }
-}
-
-/*10. Функция чтения файла с содержимым базы данных (массива структурных
-элементов).*/
-void Read() {
-	FILE* file = fopen(_base_aName, "rb");//двоичный вид  записи
-
-	for (size_t i = 0; i < _base_aSize; i++)
-		fread(&_baseMas[i], sizeof(AStruct), 1, file);
-	fclose(file);
 }
 
 /*11. Функция записи в файл содержимого базы данных (массива структурных
 элементов).*/
 
-void Save() {
-	FILE* file = fopen(_base_aName, "wb");//для записи не текста
-
-	for (size_t i = 0; i < _base_aSize; i++)
-		fwrite(&_baseMas[i], sizeof(AStruct), 1, file);
-	fclose(file);
+void Save(int SizeofDB) {
+    ofstream out;
+    out.open("text.txt");
+    if (out.is_open()) {
+        for (int i = 0; i <= SizeofDB; i++) {
+            if (_baseMas[i].Delete == false) {
+                out << _baseMas[i].number << endl;
+                out << _baseMas[i].place << endl;
+                out << _baseMas[i].time << endl;
+                out << _baseMas[i].data << endl;
+                out << _baseMas[i].price << endl;
+            }
+        }
+    }
+    out.close();
+  /*  FILE* file = fopen("gg.txt", "wb");//для записи не текста
+   
+    for (int i = 0; i < _base_aSize; i++)
+        fwrite(&_baseMas[i], sizeof(AStruct), 1, file);
+    fclose(file);*/
 }
+
+/*10. Функция чтения файла с содержимым базы данных (массива структурных
+элементов).*/
+void Read(int SizeofDB) {
+    ifstream in("text/txt");
+   
+    if (in.is_open()) {
+        for (int i = 0; i <= SizeofDB; i++) {
+            if (_baseMas[i].Delete == false) {
+                in >> _baseMas[i].number;
+                in >> _baseMas[i].place ;
+                in >> _baseMas[i].time;
+                in >> _baseMas[i].data ;
+                in >> _baseMas[i].price ;
+            }
+        }
+    }
+    in.close();
+  
+    /*FILE* file = fopen("gg.txt", "rb");//двоичный вид  записи
+
+    for (int i = 0; i < _base_aSize; i++) 
+		fread(&_baseMas[i], sizeof(AStruct), 1, file);
+	fclose(file);
+    */
+}
+
+
 };
 
 
 int main() {
-	setlocale(LC_CTYPE, "Russian");
+    setlocale(LC_ALL, "Russian");
 	int SizeofDB;
 	string NameofDB;
 	int change;
@@ -234,7 +270,7 @@ int main() {
 				cin >> structure.price;
 
 				database->Add_el(structure, j);
-				cout << "\nДобавлено " << j + 1 << "из " << cou << endl;
+				cout << "\nДобавлено " << j + 1 << " из " << cou << endl;
 
 			}
 			break;
@@ -262,12 +298,12 @@ int main() {
 			cout << first.number << "\n" << first.place << "\n" << first.time << "\n" << first.data << "\n" << first.price;
 			break;
 		case 5:
-			cout << "\n\nБаза данных:\n" << database->FindEmptyper();
+            cout << "\n\nБаза данных:\n" << database->FindEmptyper() << endl;
 			all = database->GetALL_el();
-			cout << "Номер рейса" << setw(10) << "Пункт назнач" << setw(10) << "Время вылета" << setw(10) << "Дата вылета" << setw(10) << "Стоимость билета" << endl;
-			for (size_t i = 0; i < all.size(); i++)
-				cout << all[i].number << "  " << all[i].place << "  " << all[i].time << "  " << all[i].data << "  " << all[i].place;
-			break;
+			cout << "Номер рейса   " << setfill(' ') << "Пункт назнач   " << setfill(' ') << "Время вылета   " << setfill(' ') << "Дата вылета   " << setfill(' ') << "Стоимость билета   " << endl;
+            for (size_t i = 0; i < all.size(); i++)
+                cout << all[i].number << "             " << all[i].place << "             " << all[i].time << "          " << all[i].data << "          " << all[i].price << endl;
+			break;   
 
 
 
@@ -496,16 +532,14 @@ int main() {
 
             }break;
         case 8:
-            database->Save();
+            database->Save(SizeofDB);
             cout << "Сохранено.\n";
             break;
 
         case 9:
-            database->Read();
+            database->Read(SizeofDB);
             cout << "Прочитано.\n";
             break;
-
-
 
         case 0:
             cout << "Работа закончена."; break;
