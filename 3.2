@@ -1,0 +1,274 @@
+#include <iostream>
+#include <conio.h>
+#include <string>
+
+using namespace std;
+
+struct Base //структура для хранения данных
+{
+	int Number = 0;
+	int Price = 0;
+	string Place = "";
+	string Time = "";
+	string Data = "";
+};
+
+struct Data //структура с данными и ссылкой на следующий элемент
+{
+	Data* Next_El;//так как двусвязный список, то здесь ссылка на след эл
+	Data* Past_El;//и на предыдущий элемент
+	Base Info;
+	bool Dat = false;//
+};
+
+class Base_a //основной класс для работы со списком
+{
+private:
+	Data* First_El;
+public:
+	Base_a()
+	{
+		First_El = NULL;
+	}
+
+
+
+	//2.Добавление элемента в конец списка
+
+
+	void AddToEnd(Base Info) //2.Добавление элемента в конец списка
+	{
+		Data* New_Link = new Data;//(создаем узел)добавляем новую структуру
+		New_Link->Info = Info;//устанавливаем ссылку на старый элемент, а потом обновляем
+		New_Link->Next_El = NULL;//нулевое значение, так как односвязный список
+		New_Link->Past_El = NULL;
+		if (First_El != NULL)//если первый эл не равен нулевому значению, то
+		{
+			Data* Next_El = First_El;//создаем структуру в дате
+			while (Next_El->Next_El)// просматриваем, пока не найдем последний элемент
+				Next_El = Next_El->Next_El;//устанавливаем ссылку на старый элемент, а потом обновляем
+			New_Link->Past_El = Next_El;
+			Next_El->Next_El = New_Link;
+		}
+		else
+			First_El = New_Link;
+	}
+
+
+	//3.Добавление элемента в начало списка
+
+
+	void AddToBegin(Base d) //3.Добавление элемента в начало списка
+	{
+		Data* New_Link = new Data;//устанавливаем ссылку на старый элемент, а потом обновляем
+		New_Link->Info = d;
+		First_El->Past_El = New_Link;
+		New_Link->Next_El = First_El;
+		New_Link->Past_El = NULL;
+		First_El = New_Link;
+	}
+
+
+	//4.Удаление конечного элемента списка
+
+
+	void Last_Delete() //4.Удаление конечного элемента списка
+	{
+		Data* Next_El = First_El;
+		while ((Next_El->Next_El)->Next_El)//просматриваем, пока не убедимся, что элемент последний
+			Next_El = Next_El->Next_El;//устанавливаем узел на предпоследний элемент, а последний удаляем
+		(Next_El = Next_El)->Past_El = NULL;
+		Next_El->Next_El = NULL;
+	}
+
+
+	//5.Удаление начального элемента списка
+
+	void First_Delete() //5.Удаление начального элемента списка
+	{
+		Data* Next_El = First_El;
+		First_El = Next_El->Next_El;//делаем первый элемент вторым, остальные также смещаем
+		First_El->Past_El = NULL;
+	}
+
+
+
+	/*6.Поиск элемента по заданному значению поля структуры*/
+
+	//ввожу номер поля (зависит инт или стринг), далее эелемент, который хочу найти. Если находит, то выводит строчку, в которой содержится этот элемент
+
+	Data* Find_El(int i, string Search) //ищет элемент в полe string
+	{
+
+		Data* Current_El = First_El; //определяем текущий элемент
+		if (i == 2)
+			while (Current_El != NULL)
+			{
+				if (Current_El->Info.Place == Search)
+					return Current_El;
+				else
+					Current_El = Current_El->Next_El;
+			}
+		else if (i == 3)
+			while (Current_El != NULL)
+			{
+				if (Current_El->Info.Time == Search)
+					return Current_El;
+				else
+					Current_El = Current_El->Next_El;
+			}
+		else if (i == 4)
+			while (Current_El != NULL)
+			{
+				if (Current_El->Info.Data == Search)
+					return Current_El;
+				else
+					Current_El = Current_El->Next_El;
+			}
+	}
+
+	Data* Find_El(int i, int Search) //ищет элемент в поле int
+	{
+
+		Data* Current_El = First_El;//определяем текущий элемент
+		if (i==1)
+		while (Current_El != NULL)
+		{
+			if (Current_El->Info.Number == Search)
+				return Current_El;
+			else
+				Current_El = Current_El->Next_El;
+		}
+		else if (i==5)
+			while (Current_El != NULL)
+			{
+				if (Current_El->Info.Price == Search)
+					return Current_El;
+				else
+					Current_El = Current_El->Next_El;
+			}
+	}
+
+
+	/*7.Добавление элемента после найденного*/
+
+
+	void AddAfterFind(Data* Current_El, Base Info) //7.Добавление элемента после найденного, отличие в том, что используемых переменных теперь больше в методе
+	{
+		Data* New_Link = new Data;
+		New_Link->Info = Info;//устанавливаем ссылку на старый элемент, а потом обновляем
+		New_Link->Next_El = Current_El->Next_El;
+		New_Link->Past_El = Current_El;
+		Current_El->Next_El->Past_El = New_Link;
+		Current_El->Next_El = New_Link;
+	}
+
+
+
+	/*8.Удаление найденного элемента*/
+
+	void Delete_FindElement(Data* Delete_El) //8.Удаление найденного элемента
+	{
+		if (Delete_El->Next_El != NULL)
+			Delete_El->Next_El->Past_El = Delete_El->Past_El;
+		if (Delete_El->Past_El != NULL)
+			Delete_El->Past_El->Next_El = Delete_El->Next_El;
+		else
+			First_El = Delete_El->Next_El;
+	}
+
+	void display();
+	
+};
+
+	void Base_a::display() //9.Вывод на экран
+	{
+		Data* Current_El = First_El;
+		while (Current_El != NULL) //пока не станет равно нулю, выводим
+		{
+			cout << Current_El->Info.Number << ' ' << Current_El->Info.Place << ' ' << Current_El->Info.Time << ' ' << Current_El->Info.Data << ' ' << Current_El->Info.Price << endl;
+			Current_El = Current_El->Next_El;
+		}
+	}
+int main()
+{
+	setlocale(LC_ALL, "RUS");
+
+	Base_a Data_a;
+	Data* Finding_El = new Data;
+	int cou = 0;
+	Base First;
+	while (cou != -1)
+	{
+		cout << "\nВыберите: ";
+		cout << "\n1.Выход из программы";
+		cout << "\n2.Добавление элемента в конец списка";
+		cout << "\n3.Добавление элемента в начало списка";
+		cout << "\n4.Удаление конечного элемента списка";
+		cout << "\n5.Удаление начального элемента списка";
+		cout << "\n6.Поиск элемента по заданному значению поля структуры";
+		cout << "\n7.Добавление элемента после найденного";
+		cout << "\n8.Удаление найденного элемента";
+		cout << "\n9.Вывод на экран\n";
+		cin >> cou;
+		if (cou == 1)
+		{
+			break;
+		}
+		if (cou == 2)
+		{
+			cout << "\nВведите номер рейса, место, время, дату и цену:\n ";
+			cin >> First.Number >> First.Place >> First.Time >> First.Data >> First.Price;
+			Data_a.AddToEnd(First);
+		}
+		if (cou == 3)
+		{
+			cout << "\nВведите номер рейса, место, время, дату и цену:\n ";
+			cin >> First.Number >> First.Place >> First.Time >> First.Data >> First.Price;
+			Data_a.AddToBegin(First);
+		}
+		if (cou == 4)
+		{
+			Data_a.Last_Delete();
+		}
+		if (cou == 5)
+		{
+			Data_a.First_Delete();
+		}
+		if (cou == 6)
+		{
+			int i;
+			cout << "\nВведите поле структуры и элемент поиска ";
+			cin >> i;
+			if (i == 1 || i == 5)
+			{
+				int elem;
+				cin >> elem;
+				Finding_El = Data_a.Find_El(i, elem);
+			}
+			else
+			{
+				string elem;
+				cin >> elem;
+				Finding_El = Data_a.Find_El(i,elem);
+			}
+			cout << "\nНомер Место  Время    Дата    Цена" << endl;
+			cout << Finding_El->Info.Number << "     " << Finding_El->Info.Place << "     " << Finding_El->Info.Time << "  " << Finding_El->Info.Data << "  " << Finding_El->Info.Price << endl;
+		}
+		if (cou == 7 and Finding_El)
+		{
+			cout << "\nВведите номер рейса, место, время, дату и цену:\n ";
+			cin >> First.Number >> First.Place >> First.Time >> First.Data >> First.Price;
+			Data_a.AddAfterFind(Finding_El, First);
+		}
+		if (cou == 8 and Finding_El) {
+			Data_a.Delete_FindElement(Finding_El);
+		}
+		if (cou == 9)
+		{
+			Data_a.display();
+				
+			
+		}
+	}
+}
