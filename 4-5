@@ -11,6 +11,13 @@ using namespace std;
         Удаление элемента
 */
 
+/* Задать последовательность двузначных чисел, полученную компиляцией числа, месяца,
+года вашего рождения, числа, месяца, года выдачи студенческого билета, номера сотового
+телефона. Например: 01 12 19 89 25 08 20 10 91 63 45 56 76
+
+МОЯ:
+14 10 03    17 08 21    91 53 76 44 61
+*/
 class Tree_Binary
 {
 	struct Bin_El //структура для элемента (значение, пути влево и вправо)
@@ -210,10 +217,10 @@ private:
 
 void Print_Tree(vector<int> Vec) //полный вывод
 {
-	cout << "\nПолное дерево:";
+	cout << "\nПолное дерево:\n";
 	for (int n : Vec)
 	{
-		cout << n;
+		cout << n << endl;
 	}
 }
 
@@ -241,13 +248,13 @@ int main() {
 			checking = false;
 			break;
 		case(1):
-			cout << "\nВведите элемент: ";
+			cout << "\nВведите элемент: \n";
 			cin >> Element;
 			BinTree.Push_El(Element);
 			cout << endl;
 			break;
 		case(2):
-			cout << "\nВведите элемент: ";
+			cout << "\nВведите элемент: \n";
 			cin >> Element;
 			cout << BinTree.Find_El(Element);
 			cout << endl;
@@ -265,7 +272,7 @@ int main() {
 			cout << endl;
 			break;
 		case(6):
-			cout << "\nВведите элемент: ";
+			cout << "\nВведите элемент: \n";
 			cin >> Element;
 			BinTree.Delete_El(Element);
 			cout << endl;
