@@ -40,15 +40,25 @@ public:
 		Tree = new BinTree;
 	}
 
+
+
+	/*1. Добавить элемент*/ 
+
 	void Push_El(int value) //добавление элемента
 	{
 		Adding(value, Tree->Root_ofTree);//использование еще одной функции adding (она ниже), потому что на вход получаем одно значение, а работаем с двумя. С другими двумя ф-иями то же самое
 	}
 
+
+	/*6.Удалит элемент */
+
 	void Delete_El(int value) //удаление элемента
 	{
 		Removing(value, Tree->Root_ofTree);//передаем значения
 	}
+
+
+	/*2. Поиск элемента*/
 
 	bool Find_El(int value) //поиск элемента
 	{
@@ -57,7 +67,7 @@ public:
 	}
 
 	
-
+	/*Вектор для записи*/
 	vector<int> Register_Vect() //запись элементов дерева + их дочерних через вектор
 	{
 		vector<int> Result;
@@ -74,6 +84,10 @@ public:
 		return Result;
 	}
 
+
+
+	/*4.Сохранить дерево*/
+
 	void Save_File() //сохраняет введённое дерево в текстовом файле
 	{
 		vector<int> Result = Register_Vect();//результат в вектор записи
@@ -88,6 +102,10 @@ public:
 		}
 		f.close();//закрываем файл
 	}
+
+
+
+	/*5.Записать дерево*/
 
 	void Open_File()//метод открытия файла
 	{
@@ -110,27 +128,29 @@ public:
 		f.close();
 	}
 private:
+
+	/*6.Удалит элемент */
 	void Removing(int value, Bin_El*& Branch) //перемещение элементов при удалении конкретного
 	{
-		if (!Branch)//если не ветка
+		if (!Branch)//если ветки не существует
 		{
 			throw exception("Такого элемента не существует!");//переходим в исключение
 		}
 		else if (Branch->Value == value)//если ветка переходит в значение и значение определяется
 		{
-			if (Branch->Left == nullptr && Branch->Right == nullptr)//если она нулевые типы
+			if (Branch->Left == nullptr && Branch->Right == nullptr)//если элемент - "листик" , то есть последний, мы ->
 			{
-				Branch = nullptr;//то и ветка
+				Branch = nullptr;//просто удаляем узел
 				return;
 			}
-			if (Branch->Left != nullptr && Branch->Right != nullptr)//если оба не нулевые
+			if (Branch->Left != nullptr && Branch->Right != nullptr)//если оба имеют дочерние
 			{
-				Bin_El*& N_Elem = Find_Left(Branch->Right);//тогда ищем элемент
+				Bin_El*& N_Elem = Find_Left(Branch->Right);//тогда ищем в правой ветке минимальный элемент, который ближе всего по значению к тому, который надо удалить
 				int New_Value = N_Elem->Value;//новое значение переносится 
-				if (N_Elem->Right != nullptr)//если эл-т справа не равен нул знач
+				if (N_Elem->Right != nullptr)//если эл-т справа не пустой
 				{
-					N_Elem = N_Elem->Right;//переносится
-				}
+					N_Elem = N_Elem->Right;//заменяем удаляемый узел на его потомка
+				}//при удалении элемента связи не пропадают, а соединяются заново
 				else
 				{
 					N_Elem = nullptr;//иначе нулевой тип
@@ -140,12 +160,12 @@ private:
 			else
 			{
 				if (Branch->Left == nullptr)//иначе же,если ветка слева равна нулевому типу
-					Branch = Branch->Right;//то она переходит вправо
+					Branch = Branch->Right;//то просто удалили элемент, связи пересоединились
 				else
-					Branch = Branch->Left;//если не равна, то влево
+					Branch = Branch->Left;//заменяем удаляемый узел на его потомка
 			}
 		}
-		else//совсем иначе
+		else//если все-таки существует
 		{
 			if (value >= Branch->Value)//если номер больше или равен 
 				Removing(value, Branch->Right);//перемещает вправо
@@ -154,47 +174,54 @@ private:
 		}
 	}
 
+	/*1. Добавить элемент*/
 	void Adding(int value, Bin_El*& Branch) //добавление элемента
 	{
-		if (!Branch)//не ветка
+		if (!Branch)//не ветка (если дерева нет, то формируем корень)
 		{
-			Branch = new Bin_El;//будет новым элементом
-			Branch->Value = value;//новое значение
-			Branch->Right = nullptr;//справва ноль
+			Branch = new Bin_El;//память под узел. (будет новым элементом)
+			Branch->Value = value;//поле данных. (новое значение)
+			Branch->Right = nullptr;// ВЕтки инициализируются пустотой.  справва ноль
 			Branch->Left = nullptr;//слева ноль
 		}
 		else
 		{
 			if (value >= Branch->Value)
-				Adding(value, Branch->Right);//либо, если значение >= справа, то добавляем вправо
+				Adding(value, Branch->Right);//либо, если значение >= справа, то добавляем дочернюю вправо
 			else
-				Adding(value, Branch->Left);//иначе доьавляем влево
+				Adding(value, Branch->Left);//иначе доьавляем дочернюю влево
 		}
 	}
 
+
+	/*Для вектора записи*/
 	void Write_Child_To_Vect(Bin_El* N_Elem, vector<int>* Result) //запись дочерних путей в вектор
 	{
-		if (N_Elem->Left != nullptr)//если слева не ноль
+		if (N_Elem->Left != nullptr)//если слева не пусто
 		{
 			Result->push_back(N_Elem->Left->Value);//вставляем нов эл в вектор
 			Write_Child_To_Vect(N_Elem->Left, Result);//функция 
 		}
-		if (N_Elem->Right != nullptr)//если справа не ноль
+		if (N_Elem->Right != nullptr)//если справа не пусто
 		{
 			Result->push_back(N_Elem->Right->Value);//то же самое
 			Write_Child_To_Vect(N_Elem->Right, Result);
 		}
 	}
 
+
+
+	/*2. Поиск элемента*/
+
 	Bin_El* Find_El(int value, Bin_El* RootEl) //поиск элемента по значению
 	{
-		if (!RootEl)//если не корень элемента
+		if (!RootEl)//если нет корня
 		{
 			return nullptr;//возвращает нулевой тип
 		}
-		if (RootEl->Value == value)//если равен значению
+		if (RootEl->Value == value)//если данные есть
 		{
-			return RootEl;//возвращается это значение
+			return RootEl;//возвращается корень
 		}
 		else
 		{
@@ -205,15 +232,21 @@ private:
 		}
 	}
 
+
+	/*Для функции удаления*/
 	Bin_El*& Find_Left(Bin_El*& Branch) //поиск из правой ветки наименьшего левого (близкого к исходному)
 	{
-		if (Branch->Left != nullptr)//если справа не равен нулю
+		if (Branch->Left != nullptr)//если не пустой
 		{
 			return Find_Left(Branch->Left);//возвращается поиск наименьшего левого
 		}
-		return Branch;//возвращается ветка
+		return Branch;//возвращается узел
 	}
 };
+
+
+/*3.Вывести все дерево*/
+
 
 void Print_Tree(vector<int> Vec) //полный вывод
 {
