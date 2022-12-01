@@ -1,0 +1,231 @@
+#include <iostream>
+#include <string>
+#include <fstream>
+
+using namespace std;
+
+/*
+    Написать алгоритм Дейкстры.
+
+    Граф задается в файле в виде матрицы.
+    Входные данные: начальная и конечная вершина.
+    После завершения обхода графа результат должен быть записан в файл путем добавления строки в формате:
+        начальная вершина,
+        конечная вершина,
+        промежуточные вершины от начальной до конечной.
+    Исходный граф должен содержать не менее 10-ти вершин и 30-ти связей между ними.
+*/
+
+// Реализация алгоритма Дейкстры
+class Algoritm
+{
+private:
+	const int infinity = 2147483647; // Наша псевдо-"машинная бесконечность"
+	int ver_cou; // количество вершин
+	bool* mark_fiks; // Массив фиксации метки. Значения: 0 - вершина не рассмотрена; 1 - вершина рассмотрена
+	int* min_dist; // Содержит текущие кратчайшие расстояния от исходной до соответствующей вершины
+	int* ver_seque; // Для определения последовательности вершин, входящих в кратчайший маршрут
+	int** graph_matrix; // Матрица графа
+
+public:
+	Algoritm(const string& NameOfFile)
+	{
+		ver_cou = 1;
+
+		// Получение файлового потока
+		ifstream& fileGraf = *(new ifstream(NameOfFile.c_str()));
+		if (!fileGraf.good())
+		{
+	
+				delete& fileGraf;
+			throw string("Failed to open file");
+		}
+
+		fileGraf.seekg(0); // Позиционируем указатель чтения
+
+		// Находим размер матрицы
+		string tempBuf = "";
+		getline(fileGraf, tempBuf);
+		for (int i = 0; i < tempBuf.length(); i++)
+		{
+			if (tempBuf[i] == ' ')
+			{
+				ver_cou++;
+			}
+		}
+
+		fileGraf.seekg(0); // Возвращаем обратно указатель чтения
+
+		mark_fiks = new bool[ver_cou];
+		min_dist = new int[ver_cou];
+		ver_seque = new int[ver_cou];
+		graph_matrix = new int* [ver_cou]; // ver_cou строк в матрице
+		for (int i = 0; i < ver_cou; i++)
+		{
+			graph_matrix[i] = new int[ver_cou]; // и ver_cou столбцов
+		}
+
+		// Остановка по исчерпанию данных
+		while (!fileGraf.eof())
+		{
+			// Заполнение матрицы
+			for (int i = 0; i < ver_cou; i++)
+			{
+				for (int j = 0; j < ver_cou; j++)
+				{
+					fileGraf >> graph_matrix[i][j];
+
+					// Остановка при сбое (вероятно, из-за того, что достигнут конец данных или произошла
+					// ошибка при чтении
+					if (fileGraf.fail())
+					{
+						break;
+						throw string("File read error");
+					}
+				}
+			}
+		}
+
+		fileGraf.close();
+	}
+
+	void findWay(int startTop, int endTop, const string& NameOfFile)
+	{
+		// Превращаем вершины в индексы
+		startTop--;
+		endTop--;
+
+		// Начальная инициализация массивов
+		for (int i = 0; i < ver_cou; i++)
+		{
+			mark_fiks[i] = false;
+			min_dist[i] = infinity;
+			ver_seque[i] = 0;
+		}
+		min_dist[startTop] = 0;
+
+		for (int k = 0; k < ver_cou - 1; k++) // Последний элемент можем не рассматривать
+		{
+			int index_BlackLabel = ver_cou, minVal = infinity;
+
+			// Ищем индекс минимальной метки
+			for (int i = 0; i < ver_cou; i++)
+			{
+				if ((mark_fiks[i] == false) && (min_dist[i] < minVal))
+				{
+					minVal = min_dist[i];
+					index_BlackLabel = i;
+				}
+			}
+
+			// Тормошим соседей (ну а что, в общаге жить весело, что не говори)
+			for (int j = 0; j < ver_cou; j++)
+			{
+				if ((graph_matrix[index_BlackLabel][j] != 0) && (mark_fiks[j] == false))
+				{
+					if (min_dist[j] > min_dist[index_BlackLabel] + graph_matrix[index_BlackLabel][j])
+					{
+						min_dist[j] = min_dist[index_BlackLabel] + graph_matrix[index_BlackLabel][j];
+					}
+				}
+			}
+
+			// Помечаем вершину с индексом BlackLabel как посещенную и повторим шаг алгоритма
+			mark_fiks[index_BlackLabel] = true;
+		}
+
+		// Реализация последовательности вершин
+		int tempInd = endTop;
+		int indForVerSeq = ver_cou - 1;
+		ver_seque[indForVerSeq--] = endTop + 1;
+		for (;;)
+		{
+			int valDist = min_dist[tempInd];
+
+			if (valDist == 0)
+			{
+				break;
+			}
+
+			// Ищем соседей вершины
+			for (int j = 0; j < ver_cou; j++)
+			{
+				if ((graph_matrix[tempInd][j] != 0) && (valDist - graph_matrix[tempInd][j] == min_dist[j]))
+				{
+					ver_seque[indForVerSeq--] = j + 1;
+					tempInd = j;
+					break;
+				}
+			}
+		}
+
+		// Помещение в файл
+		ofstream fileGraf(NameOfFile);
+
+		fileGraf << startTop + 1 << ' ' << endTop + 1 << endl;
+
+		for (int i = 0; i < ver_cou; i++)
+		{
+			if (ver_seque[i] != 0)
+			{
+				fileGraf << ver_seque[i] << ' ';
+			}
+		}
+		cout << endl;
+
+		fileGraf.close();
+	}
+
+	~Algoritm()
+	{
+		delete[] mark_fiks;
+		mark_fiks = nullptr;
+		delete[] min_dist;
+		min_dist = nullptr;
+		delete[] ver_seque;
+		ver_seque = nullptr;
+		for (int i = 0; i < ver_cou; i++)
+		{
+			delete[] graph_matrix[i];
+		}
+		graph_matrix = nullptr;
+		ver_cou = 0;
+	}
+};
+
+int main(int nNumberofArgs, char* pszArgs[])
+{
+	try
+	{
+		string fileOrigGraph, fileTargetGraph;
+
+		cout << "Enter the name of the graph file: "; getline(cin, fileOrigGraph);
+		//cin.get(); // Кушает '\n'
+		cout << "Enter a filename to output: "; getline(cin, fileTargetGraph);
+
+		Algoritm dGraph(fileOrigGraph);
+
+		bool isWork = true;
+
+		while (isWork)
+		{
+			int startTop = 0, endTop = 0;
+			cout << "\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
+			cout << "Enter start vertex: "; cin >> startTop;
+			cout << "Enter End Vertex: "; cin >> endTop;
+			dGraph.findWay(startTop, endTop, fileTargetGraph);
+
+			cout << "Continue? (0 - No/1-Yes): "; cin >> isWork;
+		}
+	}
+	catch (const string error)
+	{
+		cout << "Error: " << error << endl;
+	}
+
+	// Ожидание, позволяющее пользователю увидеть результат работы программы
+	cout << "\nPress Enter to continue...\n";
+	cin.get();
+	cin.get();
+	return 0;
+}
