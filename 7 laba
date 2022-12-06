@@ -1,0 +1,164 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <iostream>
+#include <stdio.h>
+#include <limits.h>
+#include <fstream>
+#include <string>
+#include <queue>
+#include <algorithm>
+#include <stdlib.h>
+#include <vector>
+
+using namespace std;
+
+class Shirina {
+private:
+    int ind_of_begin;//индекс начала поиска
+    int ind_of_end;//конца поиска
+    int size_of_graf;//размер графа
+    vector<int> fiks_mark;
+    vector<int> min_way;//минимальный путь
+    vector<int> VON_PUNKT;
+    vector< vector<int> > passed;//пройденo
+
+public:
+
+
+    Shirina(int size) {
+        size_of_graf = size;
+        fiks_mark.reserve(size_of_graf);//reserve() заставляет вектор перераспределить свое хранилище так, чтобы вместились новые элементы
+        min_way.reserve(size_of_graf);
+        VON_PUNKT.reserve(size_of_graf);
+        passed.reserve(size_of_graf);
+        VON_PUNKT[0] = -1;
+
+        for (int i = 0; i < size_of_graf; i++) {
+            fiks_mark.push_back(0);
+            vector<int> temp(size_of_graf);
+            passed.push_back(temp);
+        }
+
+    };
+
+
+    void read(string name) {
+        int arr[size_of_graf][size_of_graf];
+
+
+        string path = name;
+        ifstream fin;
+        fin.open(path);
+
+
+        for (int i = 0; i < size_of_graf; i++)
+        {
+            for (int j = 0; j < size_of_graf; j++)
+            {
+                fin >> arr[i][j];
+                passed[i][j] = arr[i][j];
+            }
+        }
+
+
+
+    };
+
+
+    void make_Graph(int begin) {
+        vector<int> temp(size_of_graf);
+        for (int i = 0; i < size_of_graf; i++) {
+            temp.push_back(0);
+
+        }
+        ind_of_begin = begin;
+        int a;
+        for (int i = 0; i < size_of_graf; i++) {
+            passed[i][i] = 0;
+
+
+        }
+        for (int i = 0; i < size_of_graf; i++) {
+            min_way[i] = passed[ind_of_begin][i];
+
+        }
+        fiks_mark[begin] = 1;
+        VON_PUNKT[0] = -1;
+
+
+
+    };
+
+
+
+    void BFS(int end) {
+        ind_of_end = end;
+        queue<int> Queue;
+        Queue.push(ind_of_begin);
+        int preview[size_of_graf];
+        preview[0] = -1;
+        int k = 0;
+        while (!Queue.empty()) {
+            int temp_begin = Queue.front();
+            Queue.pop();
+            VON_PUNKT[k++] = temp_begin + 1;
+
+            for (int j = 0; j < size_of_graf; j++) {
+                int v = passed[temp_begin][j];
+                if (fiks_mark[j] == 0 and v != 0) {
+                    Queue.push(j);
+                    fiks_mark[j] = 1;
+
+                }
+            }
+        }
+
+    };
+
+
+    void print() {
+        FILE* file = fopen("put.txt", "a");
+        for (int i = 0; i < size_of_graf; i++) {
+            if (VON_PUNKT[i] != ind_of_end + 1) fprintf(file, "%d ", VON_PUNKT[i]);
+            else break;
+
+
+        }
+        fprintf(file, "%d ", ind_of_end + 1);
+        fprintf(file, "\n");
+        fclose(file);
+
+
+    }
+
+
+
+
+};
+
+int main()
+{
+    int instruction;
+    int size;
+    int begin;
+    int end;
+    string file_name;
+    do {
+        cout << "Введите размер графа: ";
+        cin >> size;
+        Shirina Graph1(size);
+        cout << "Введите название файла с графом. Не забудьте написать его расширение! : " << endl;
+        cin >> file_name;
+        Graph1.read(file_name);
+        cout << "Введите начальную вершину ";
+        cin >> begin;
+        cout << "Введите конечную вершину ";
+        cin >> end;
+        Graph1.make_Graph(begin - 1);
+        Graph1.BFS(end - 1);
+        Graph1.print();
+        cout << "Ваш путь от " << begin << " до " << end << "находится в файле put.txt" << endl;
+        cout << "Введите 0, если хотите закончить. Чтобы продолжить введите любое другое число.";
+        cin >> instruction;
+    } while (instruction != 0);
+    return 0;
+};
