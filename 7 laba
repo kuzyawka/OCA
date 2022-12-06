@@ -16,10 +16,10 @@ private:
     int ind_of_begin;//индекс начала поиска
     int ind_of_end;//конца поиска
     int size_of_graf;//размер графа
-    vector<int> fiks_mark;
+    vector<int> fiks_mark;//вершины рассмотренные
     vector<int> min_way;//минимальный путь
-    vector<int> VON_PUNKT;
-    vector< vector<int> > passed;//пройденo
+    vector<int> num_of_mark;//номера вершин
+    vector< vector<int> > m_dug;//матрица расстояния
 
 public:
 
@@ -28,14 +28,14 @@ public:
         size_of_graf = size;
         fiks_mark.reserve(size_of_graf);//reserve() заставляет вектор перераспределить свое хранилище так, чтобы вместились новые элементы
         min_way.reserve(size_of_graf);
-        VON_PUNKT.reserve(size_of_graf);
-        passed.reserve(size_of_graf);
-        VON_PUNKT[0] = -1;
+        num_of_mark.reserve(size_of_graf);
+        m_dug.reserve(size_of_graf);
+        num_of_mark[0] = -1;
 
         for (int i = 0; i < size_of_graf; i++) {
             fiks_mark.push_back(0);
             vector<int> temp(size_of_graf);
-            passed.push_back(temp);
+            m_dug.push_back(temp);
         }
 
     };
@@ -55,7 +55,7 @@ public:
             for (int j = 0; j < size_of_graf; j++)
             {
                 fin >> arr[i][j];
-                passed[i][j] = arr[i][j];
+                m_dug[i][j] = arr[i][j];
             }
         }
 
@@ -73,16 +73,16 @@ public:
         ind_of_begin = begin;
         int a;
         for (int i = 0; i < size_of_graf; i++) {
-            passed[i][i] = 0;
+            m_dug[i][i] = 0;
 
 
         }
         for (int i = 0; i < size_of_graf; i++) {
-            min_way[i] = passed[ind_of_begin][i];
+            min_way[i] = m_dug[ind_of_begin][i];
 
         }
         fiks_mark[begin] = 1;
-        VON_PUNKT[0] = -1;
+        num_of_mark[0] = -1;
 
 
 
@@ -100,10 +100,10 @@ public:
         while (!Queue.empty()) {
             int temp_begin = Queue.front();
             Queue.pop();
-            VON_PUNKT[k++] = temp_begin + 1;
+            num_of_mark[k++] = temp_begin + 1;
 
             for (int j = 0; j < size_of_graf; j++) {
-                int v = passed[temp_begin][j];
+                int v = m_dug[temp_begin][j];
                 if (fiks_mark[j] == 0 and v != 0) {
                     Queue.push(j);
                     fiks_mark[j] = 1;
@@ -118,7 +118,7 @@ public:
     void print() {
         FILE* file = fopen("put.txt", "a");
         for (int i = 0; i < size_of_graf; i++) {
-            if (VON_PUNKT[i] != ind_of_end + 1) fprintf(file, "%d ", VON_PUNKT[i]);
+            if (num_of_mark[i] != ind_of_end + 1) fprintf(file, "%d ", num_of_mark[i]);
             else break;
 
 
