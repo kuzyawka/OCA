@@ -61,13 +61,13 @@ public:
     };
 
 
-    void make_Graph(int begin) {
+    void make_Graph(int begin_mark) {
         vector<int> noun(size_of_graf);
         for (int i = 0; i < size_of_graf; i++) {
             noun.push_back(0);
 
         }
-        ind_of_begin = begin;
+        ind_of_begin = begin_mark;
         int a;
         for (int i = 0; i < size_of_graf; i++) {
             m_dug[i][i] = 0;
@@ -78,7 +78,7 @@ public:
             min_way[i] = m_dug[ind_of_begin][i];
 
         }
-        fiks_mark[begin] = 1;
+        fiks_mark[begin_mark] = 1;
         VON_PUNKT[0] = -1;
 
 
@@ -87,22 +87,22 @@ public:
 
 
 
-    void BFS(int end) {
-        ind_of_end = end;
-        queue<int> Queue;
-        Queue.push(ind_of_begin);
+    void breadth_first_search(int end_mark) {
+        ind_of_end = end_mark;
+        queue<int> first_queue;
+        first_queue.push(ind_of_begin);
         int preview[size_of_graf];
         preview[0] = -1;
         int k = 0;
-        while (!Queue.empty()) {
-            int temp_begin = Queue.front();
-            Queue.pop();
-            VON_PUNKT[k++] = temp_begin + 1;
+        while (!first_queue.empty()) {//empty пуста ли строка
+            int mark_begin = first_queue.front();
+            first_queue.pop();
+            VON_PUNKT[k++] = mark_begin + 1;
 
             for (int j = 0; j < size_of_graf; j++) {
-                int v = m_dug[temp_begin][j];
+                int v = m_dug[mark_begin][j];
                 if (fiks_mark[j] == 0 and v != 0) {
-                    Queue.push(j);
+                    first_queue.push(j);
                     fiks_mark[j] = 1;
 
                 }
@@ -134,28 +134,28 @@ public:
 
 int main()
 {
-    int instruction;
-    int size;
-    int begin;
-    int end;
-    string file_name;
+    int make;
+    int size_of_graf;
+    int begin_mark;
+    int end_mark;
+    string name_of_file;
     do {
         cout << "Введите размер графа: ";
-        cin >> size;
-        Shirina Graph1(size);
+        cin >> size_of_graf;
+        Shirina Graph1(size_of_graf);
         cout << "Введите название файла с графом. Не забудьте написать его расширение! : " << endl;
-        cin >> file_name;
-        Graph1.read_file(file_name);
+        cin >> name_of_file;
+        Graph1.read_file(name_of_file);
         cout << "Введите начальную вершину ";
-        cin >> begin;
+        cin >> begin_mark;
         cout << "Введите конечную вершину ";
-        cin >> end;
-        Graph1.make_Graph(begin - 1);
-        Graph1.BFS(end - 1);
+        cin >> end_mark;
+        Graph1.make_Graph(begin_mark - 1);
+        Graph1.breadth_first_search(end_mark - 1);
         Graph1.print();
-        cout << "Ваш путь от " << begin << " до " << end << "находится в файле put.txt" << endl;
+        cout << "Ваш путь от " << begin_mark << " до " << end_mark << "находится в файле put.txt" << endl;
         cout << "Введите 0, если хотите закончить. Чтобы продолжить введите любое другое число.";
-        cin >> instruction;
-    } while (instruction != 0);
+        cin >> make;
+    } while (make != 0);
     return 0;
 };
