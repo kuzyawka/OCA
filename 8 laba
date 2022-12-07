@@ -1,69 +1,56 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 #include <stdio.h>
 #include <limits.h>
-#include <stdlib.h>
-#include <vector>
 #include <fstream>
 #include <string>
-#include <stack>//QQQQQQQQQQ
+#include <stack>
 #include <algorithm>
+#include <stdlib.h>
+#include <vector>
 
 using namespace std;
 
-
-
-
-
-class Graph {
+class Glubina_stack {
 private:
-    int begin_index;
-    int end_index;
-    int size_Graph;
-    int waySize_Graph;
-    vector<int> FIKS;
-    vector<int> MIN_WEG;
-    vector<int> VON_PUNKT;
-    vector< vector<int> > DUG;
-    int min = INT_MAX;
-    int min_index = INT_MAX;
-    int max = INT_MAX;
-
+    int ind_of_begin;//индекс начала поиска
+    int ind_of_end;//конца поиска
+    int size_of_graf;//размер графа
+    vector<int> fiks_mark;//вершины рассмотренные
+    vector<int> min_way;//минимальный путь
+    vector<int> VON_PUNKT;//номера вершин
+    vector< vector<int> > m_dug;//матрица расстояния
 
 public:
-
-
-    Graph(int size) {
-        size_Graph = size;
-        FIKS.reserve(size_Graph);
-        MIN_WEG.reserve(size_Graph);
-        VON_PUNKT.reserve(size_Graph);
-        DUG.reserve(size_Graph);
+    Glubina_stack(int size) {
+        size_of_graf = size;
+        fiks_mark.reserve(size_of_graf);//reserve() заставляет вектор перераспределить свое хранилище так, чтобы вместились новые элементы
+        min_way.reserve(size_of_graf);
+        VON_PUNKT.reserve(size_of_graf);
+        m_dug.reserve(size_of_graf);
         VON_PUNKT[0] = -1;
 
-        for (int i = 0; i < size_Graph; i++) {
-            FIKS.push_back(0);
-            vector<int> temp(size_Graph);
-            DUG.push_back(temp);
+        for (int i = 0; i < size_of_graf; i++) {//определяем размер матрицы
+            fiks_mark.push_back(0);//push_back() чтобы вставить новый элемент в конец вектора и увеличить вектор на 1
+            vector<int> noun(size_of_graf);
+            m_dug.push_back(noun);
         }
 
     };
 
-
-    void read(string name) {
-        int arr[size_Graph][size_Graph];
-
+    void read_file(string name) {//сюда передаются данные с матрицей для чтения файла
+        int mas[size_of_graf][size_of_graf];
 
         string path = name;
-        ifstream fin;
-        fin.open(path);
+        ifstream to_in;//берем данные из файла и включаем в работу
+        to_in.open(path);
 
-
-        for (int i = 0; i < size_Graph; i++)
+        for (int i = 0; i < size_of_graf; i++)
         {
-            for (int j = 0; j < size_Graph; j++)
+            for (int j = 0; j < size_of_graf; j++)
             {
-                fin >> arr[i][j];
-                DUG[i][j] = arr[i][j];
+                to_in >> mas[i][j];
+                m_dug[i][j] = mas[i][j];//вписываем все в матрицу
             }
         }
 
@@ -72,25 +59,23 @@ public:
     };
 
 
-    void make_Graph(int begin) {
-        vector<int> temp(size_Graph);
-        for (int i = 0; i < size_Graph; i++) {
-            temp.push_back(0);
+    void make_Graph(int begin_mark) {//данные начала пути
+        vector<int> noun(size_of_graf);
+        for (int i = 0; i < size_of_graf; i++) {
+            noun.push_back(0);//push_back() чтобы вставить новый элемент в конец вектора и увеличить вектор на 1
 
         }
-        begin_index = begin;
-        //QQQQQQQQQQ
-        for (int i = 0; i < size_Graph; i++) {
-            DUG[i][i] = 0;
+        ind_of_begin = begin_mark;//индекс начала
+        for (int i = 0; i < size_of_graf; i++) {
+            m_dug[i][i] = 0;//линия симметрии
 
 
         }
-        for (int i = 0; i < size_Graph; i++) {
-            MIN_WEG[i] = DUG[begin_index][i];
+        for (int i = 0; i < size_of_graf; i++) {
+            min_way[i] = m_dug[ind_of_begin][i];//строчка (1, например)
 
         }
-        FIKS[begin] = 1;
-        VON_PUNKT[0] = -1;
+        fiks_mark[begin_mark] = 1;//метка считается пройденной
 
 
 
@@ -98,45 +83,40 @@ public:
 
 
 
-    void BFS(int end) {
-        end_index = end;
-        stack<int> Stack;//QQQQQQQQQQ
-        Stack.push(begin_index);
-        //QQQQQQQQQQ
+    void depth_first_search(int end_mark) {
+        ind_of_end = end_mark;
+        stack<int> first_stack;
+        first_stack.push(ind_of_begin);
         int k = 0;
-        while (!Stack.empty()) {//QQQQQQQQQQ
-            int temp_begin = Stack.top();
-            Stack.pop();//QQQQQQQQQQ
-            if (FIKS[temp_begin] == 2) continue;
-            FIKS[temp_begin] = 2;//QQQQQQQQQQ
-            for (int j = size_Graph - 1; j > -1; j--) {
-                int v = DUG[temp_begin][j];
-                if (FIKS[j] != 2 and v != 0) {
-                    Stack.push(j);
-                    FIKS[j] = 1;
+        while (!first_stack.empty()) {//empty пуста ли строка
+            int mark_begin = first_stack.top();//пуста, значит начинаем с первого эл-та. top ссылка на верхний эдлемент стека
+            first_stack.pop();//pop для удаления верхнего элемента стека
+           
+            if (fiks_mark[mark_begin] == 2) continue;
+            fiks_mark[mark_begin] = 2;
+            for (int j = size_of_graf - 1; j > -1; j--) {
+                int v = m_dug[mark_begin][j];
+                if (fiks_mark[j] != 2 and v != 0) {
+                    first_stack.push(j);
+                    fiks_mark[j] = 1;
 
                 }
-
-
             }
-            VON_PUNKT[k++] = temp_begin + 1;//QQQQQQQQQQ
-
-
-
+            VON_PUNKT[k++] = mark_begin + 1;
         }
 
     };
 
 
     void print() {
-        FILE* file = fopen("way.txt", "a");
-        for (int i = 0; i < end_index; i++) {//QQQQQQQQQQ
-            if (VON_PUNKT[i] != end_index + 1) fprintf(file, "%d ", VON_PUNKT[i]);
+        FILE* file = fopen("put.txt", "a");
+        for (int i = 0; i < ind_of_end; i++) {
+            if (VON_PUNKT[i] != ind_of_end + 1) fprintf(file, "%d ", VON_PUNKT[i]);
             else break;
 
 
         }
-        fprintf(file, "%d ", end_index + 1);
+        fprintf(file, "%d ", ind_of_end + 1);
         fprintf(file, "\n");
         fclose(file);
 
@@ -145,33 +125,32 @@ public:
 
 
 
-
 };
 
 int main()
 {
-    int instruction;
-    int size;
-    int begin;
-    int end;
-    string file_name;
+    int make;
+    int size_of_graf;
+    int begin_mark;
+    int end_mark;
+    string name_of_file;
     do {
         cout << "Введите размер графа: ";
-        cin >> size;
-        Graph Graph1(size);
+        cin >> size_of_graf;
+        Glubina_stack Graph1(size_of_graf);
         cout << "Введите название файла с графом. Не забудьте написать его расширение! : " << endl;
-        cin >> file_name;
-        Graph1.read(file_name);
+        cin >> name_of_file;
+        Graph1.read_file(name_of_file);
         cout << "Введите начальную вершину ";
-        cin >> begin;
+        cin >> begin_mark;
         cout << "Введите конечную вершину ";
-        cin >> end;
-        Graph1.make_Graph(begin - 1);
-        Graph1.BFS(end - 1);
+        cin >> end_mark;
+        Graph1.make_Graph(begin_mark - 1);
+        Graph1.depth_first_search(end_mark - 1);
         Graph1.print();
-        cout << "Ваш путь от " << begin << " до " << end << "находится в файле way.txt" << endl;
+        cout << "Ваш путь от " << begin_mark << " до " << end_mark << "находится в файле put.txt" << endl;
         cout << "Введите 0, если хотите закончить. Чтобы продолжить введите любое другое число.";
-        cin >> instruction;
-    } while (instruction != 0);
+        cin >> make;
+    } while (make != 0);
     return 0;
 };
