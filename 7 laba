@@ -38,21 +38,19 @@ public:
 
     };
 
-    void read_file(string name) {
+    void read_file(string name) {//сюда передаются данные с матрицей для чтения файла
         int mas[size_of_graf][size_of_graf];
 
-
         string path = name;
-        ifstream to_in;
+        ifstream to_in;//берем данные из файла и включаем в работу
         to_in.open(path);
-
 
         for (int i = 0; i < size_of_graf; i++)
         {
             for (int j = 0; j < size_of_graf; j++)
             {
                 to_in >> mas[i][j];
-                m_dug[i][j] = mas[i][j];
+                m_dug[i][j] = mas[i][j];//вписываем все в матрицу
             }
         }
 
@@ -61,26 +59,25 @@ public:
     };
 
 
-    void make_Graph(int begin_mark) {
+    void make_Graph(int begin_mark) {//данные начала пути
         vector<int> noun(size_of_graf);
         for (int i = 0; i < size_of_graf; i++) {
-            noun.push_back(0);
+            noun.push_back(0);//push_back() чтобы вставить новый элемент в конец вектора и увеличить вектор на 1
 
         }
-        ind_of_begin = begin_mark;
+        ind_of_begin = begin_mark;//индекс начала
         int a;
         for (int i = 0; i < size_of_graf; i++) {
-            m_dug[i][i] = 0;
+            m_dug[i][i] = 0;//линия симметрии
 
 
         }
         for (int i = 0; i < size_of_graf; i++) {
-            min_way[i] = m_dug[ind_of_begin][i];
+            min_way[i] = m_dug[ind_of_begin][i];//строчка 1, например)
 
         }
-        fiks_mark[begin_mark] = 1;
-        VON_PUNKT[0] = -1;
-
+        fiks_mark[begin_mark] = 1;//метка считается пройденной
+        
 
 
     };
@@ -91,12 +88,10 @@ public:
         ind_of_end = end_mark;
         queue<int> first_queue;
         first_queue.push(ind_of_begin);
-        int preview[size_of_graf];
-        preview[0] = -1;
         int k = 0;
         while (!first_queue.empty()) {//empty пуста ли строка
-            int mark_begin = first_queue.front();
-            first_queue.pop();
+            int mark_begin = first_queue.front();//пуста, значит начинаем с первого эл-та. front обращение к первому элементу
+            first_queue.pop();//pop для удаления верхнего элемента стека
             VON_PUNKT[k++] = mark_begin + 1;
 
             for (int j = 0; j < size_of_graf; j++) {
@@ -126,7 +121,6 @@ public:
 
 
     }
-
 
 
 
