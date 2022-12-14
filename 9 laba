@@ -1,0 +1,170 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <iostream>
+#include <stdio.h>
+#include <limits.h>
+#include <fstream>
+#include <string>
+#include <queue>
+#include <algorithm>
+#include <stdlib.h>
+#include <vector>
+
+using namespace std;
+
+class Glubina_stack {
+private:
+    int ind_of_begin;//индекс начала поиска
+    int ind_of_end;//конца поиска
+    int size_of_graf;//размер графа
+    vector<int> fiks_mark;//вершины рассмотренные
+    vector<int> min_way;//минимальный путь
+    vector<int> VON_PUNKT;//номера вершин
+    vector< vector<int> > m_dug;//матрица расстояния
+    int min_ind = INT_MAX;
+
+public:
+    Glubina_stack(int size) {
+        size_of_graf = size;
+        fiks_mark.reserve(size_of_graf);//reserve() заставляет вектор перераспределить свое хранилище так, чтобы вместились новые элементы
+        min_way.reserve(size_of_graf);
+        VON_PUNKT.reserve(size_of_graf);
+        m_dug.reserve(size_of_graf);
+        VON_PUNKT[0] = -1;
+
+        for (int i = 0; i < size_of_graf; i++) {//определяем размер матрицы
+            fiks_mark.push_back(0);//push_back() чтобы вставить новый элемент в конец вектора и увеличить вектор на 1
+            vector<int> noun(size_of_graf);
+            m_dug.push_back(noun);
+        }
+
+    };
+
+    void read_file(string name) {//сюда передаются данные с матрицей для чтения файла
+        int mas[size_of_graf][size_of_graf];
+
+        string path = name;
+        ifstream to_in;//берем данные из файла и включаем в работу
+        to_in.open(path);
+
+        for (int i = 0; i < size_of_graf; i++)
+        {
+            for (int j = 0; j < size_of_graf; j++)
+            {
+                to_in >> mas[i][j];
+                m_dug[i][j] = mas[i][j];//вписываем все в матрицу
+            }
+        }
+
+
+
+    };
+
+
+    void make_Graph(int begin_mark, int end_mark) {//данные начала пути
+        vector<int> noun(size_of_graf);
+        for (int i = 0; i < size_of_graf; i++) {
+            noun.push_back(0);//push_back() чтобы вставить новый элемент в конец вектора и увеличить вектор на 1
+
+        }
+        ind_of_begin = begin_mark;//индекс начала
+        min_ind = -1;
+        ind_of_end = end_mark;
+        for (int i = 0; i < size_of_graf; i++) {
+            m_dug[i][i] = 0;//линия симметрии
+
+
+        }
+        for (int i = 0; i < size_of_graf; i++) {
+            min_way[i] = m_dug[ind_of_begin][i];//строчка (1, например)
+
+        }
+        //fiks_mark[begin_mark] = 1;//метка считается пройденной
+        VON_PUNKT[0] = ind_of_begin;
+
+
+    };
+
+    void going(int a) {//функция обхода
+        fiks_mark[a] = 1;//текущая вершинаа пройдена
+        VON_PUNKT.push_back(a + 1);
+        for (int i = 0; i < size_of_graf; i++) {
+            if (fiks_mark[i] == 0 and m_dug[a][i] != 0) { going(i); }
+        };
+    };
+  
+    void depth_first_search(int end_mark) {
+
+
+        ind_of_end = end_mark;
+        queue<int> Queue;
+        Queue.push(ind_of_begin);
+        int prev[size_of_graf];
+        prev[0] = -1;
+        int l = 0;
+        while (!Queue.empty()) {
+            int a_begin = Queue.front();
+            Queue.pop();
+            VON_PUNKT[l++] = a_begin + 1;
+
+            for (int j = 0; j < size_of_graf; j++) {
+                int v = m_dug[a_begin][j];
+                if (fiks_mark[j] == 0 and v != 0) {
+                    Queue.push(j);
+                    fiks_mark[j] = 1;
+
+                }
+                /* }
+                 VON_PUNKT[k++] = mark_begin + 1;*/
+            }
+        }
+
+    };
+
+
+    void print() {
+        FILE* file = fopen("put.txt", "a");
+        for (int i = 0; i < size_of_graf; i++) {
+            if (VON_PUNKT[i] != ind_of_end + 1)fprintf(file, "%d ", VON_PUNKT[i]);
+            else break;
+
+
+        }
+        fprintf(file, "%d ", ind_of_end + 1);
+        fprintf(file, "\n");
+        fclose(file);
+
+
+    }
+
+
+
+};
+
+int main()
+{
+    int make;
+    int size_of_graf;
+    int begin_mark;
+    int end_mark;
+    string name_of_file;
+    do {
+        cout << "Введите размер графа: ";
+        cin >> size_of_graf;
+        Glubina_stack Graph1(size_of_graf);
+        cout << "Введите название файла с графом. Не забудьте написать его расширение! : " << endl;
+        cin >> name_of_file;
+        Graph1.read_file(name_of_file);
+        cout << "Введите начальную вершину ";
+        cin >> begin_mark;
+        cout << "Введите конечную вершину ";
+        cin >> end_mark;
+        Graph1.make_Graph(begin_mark - 1, end_mark-1);
+        //Graph1.depth_first_search(end_mark - 1);
+        Graph1.going(begin_mark - 1);
+        Graph1.print();
+        cout << "Ваш путь от " << begin_mark << " до " << end_mark << "находится в файле put.txt" << endl;
+        cout << "Введите 0, если хотите закончить. Чтобы продолжить введите любое другое число.";
+        cin >> make;
+    } while (make != 0);
+    return 0;
+};
